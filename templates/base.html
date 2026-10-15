@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="{{ idioma }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titulo %}Aspa{% endblock %} · Aspa</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+</head>
+<body class="{% block clase_body %}{% endblock %}">
+<header class="barra">
+  <a class="marca" href="{{ url_for('inicio') }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><path d="M15 15l5 5M20 15l-5 5"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Aspa
+  </a>
+  {% if p is defined %}<span class="proyecto-actual">{{ cabecera_de(cfg)[0] }}</span>{% endif %}
+  <form method="post" action="{{ url_for('apagar') }}" class="cerrar-aspa"
+        onsubmit="return confirm({{ _('¿Cerrar Aspa?\n\nSe detendrá el programa. Todo lo hecho ya está guardado. Para volver a usarlo, ábralo de nuevo con iniciar.')|tojson|forceescape }})">
+    <button class="boton-barra" title="{{ _('Detiene el programa (todo queda guardado)') }}">{{ _('Cerrar Aspa') }}</button>
+  </form>
+</header>
+{% if p is defined %}
+<div class="marco">
+  <nav class="pasos" aria-label="{{ _('Pasos del examen') }}">
+    {% set hecho = progreso(p) %}
+    <a href="{{ url_for('inicio') }}" class="volver-inicio">← {{ _('Todos los exámenes') }}</a>
+    <a href="{{ url_for('preparar', pid=p.id) }}#preguntas" data-seccion="preguntas" class="{{ 'hecho' if hecho.preguntas }}"><b>1</b> {{ _('Preguntas y alumnos') }}</a>
+    <a href="{{ url_for('preparar', pid=p.id) }}#config" data-seccion="config" class="{{ 'hecho' if hecho.config }}"><b>2</b> {{ _('Configuración') }}</a>
+    <a href="{{ url_for('preparar', pid=p.id) }}#generar" data-seccion="generar" class="{{ 'hecho' if hecho.generar }}"><b>3</b> {{ _('Generar e imprimir') }}</a>
+    <a href="{{ url_for('corregir', pid=p.id) }}" class="{{ 'activo' if paso=='corregir' }} {{ 'hecho' if hecho.corregir }}"><b>4</b> {{ _('Escanear y revisar') }}</a>
+    <a href="{{ url_for('ver_estadistica', pid=p.id) }}" class="{{ 'activo' if paso=='estadistica' }}"><b>5</b> {{ _('Preguntas: estadística') }}</a>
+    <a href="{{ url_for('descargar', pid=p.id, nombre='notas.xlsx') }}"><b>6</b> {{ _('Exportar notas a Excel') }}</a>
+  </nav>
+  <main class="contenido">
+{% else %}
+<main class="contenido solo">
+{% endif %}
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for cat, m in mensajes %}<div class="aviso {{ cat }}" role="status">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  {% block contenido %}{% endblock %}
+  </main>
+{% if p is defined %}</div>{% endif %}
+<footer class="pie">Aspa {{ version }} · AGPL-3.0 · {{ _('Proyectos guardados en {carpeta}', carpeta=carpeta_base) }}</footer>
+<script>
+// Pasos 1-3 están en la misma página: se resalta en el menú la sección que se está viendo
+(() => {
+  const enlaces = [...document.querySelectorAll('.pasos a[data-seccion]')];
+  const secciones = enlaces.map(a => document.getElementById(a.dataset.seccion)).filter(Boolean);
+  if (!secciones.length) return;
+  const marcar = id => enlaces.forEach(a => a.classList.toggle('activo', a.dataset.seccion === id));
+  const actualizar = () => {
+    const linea = window.innerHeight * 0.3;
+    let actual = secciones[0].id;
+    for (const sec of secciones) if (sec.getBoundingClientRect().top <= linea) actual = sec.id;
+    // al llegar al final de la página, el último paso
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) actual = secciones[secciones.length - 1].id;
+    marcar(actual);
+  };
+  window.addEventListener('scroll', actualizar, {passive: true});
+  window.addEventListener('hashchange', actualizar);
+  enlaces.forEach(a => a.addEventListener('click', () => setTimeout(() => marcar(a.dataset.seccion), 50)));
+  actualizar();
+})();
+document.querySelectorAll('.sel-convocatoria').forEach(sel => {
+  const otra = sel.parentElement.querySelector('.convocatoria-otra');
+  const ver = () => { otra.hidden = sel.value !== '__otra__'; otra.required = !otra.hidden; if (!otra.hidden) otra.focus(); };
+  sel.addEventListener('change', ver);
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
