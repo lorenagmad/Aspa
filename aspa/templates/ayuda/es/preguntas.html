@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block titulo %}Cómo preparar el banco de preguntas{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('inicio') }}">← Volver al inicio</a></p>
+<h1>Cómo preparar el banco de preguntas</h1>
+<p class="entradilla">El banco es un Excel con una fila por pregunta. Puede empezar desde una plantilla limpia o desde una con los ejemplos de esta página.</p>
+<p class="botones">
+  <a class="boton principal" href="{{ url_for('descargar_plantilla', tipo='preguntas', version='limpia') }}">Descargar plantilla limpia</a>
+  <a class="boton" href="{{ url_for('descargar_plantilla', tipo='preguntas', version='ejemplo') }}">Descargar plantilla con ejemplos</a>
+</p>
+
+<nav class="indice" aria-label="Contenido">
+  <a href="#columnas">Columnas</a> · <a href="#ejemplos">Ejemplos</a> · <a href="#varias">Varias respuestas correctas</a> ·
+  <a href="#modelos">Grupos y modelos</a> · <a href="#desorden">Desorden de opciones</a> · <a href="#explicacion">Explicaciones</a> · <a href="#imagenes">Imágenes</a> · <a href="#idiomas">Exámenes en otro idioma</a>
+</nav>
+
+<section id="columnas" class="seccion">
+  <h2>Columnas</h2>
+  <table class="tabla compacta">
+    <thead><tr><th>Columna</th><th>Para qué sirve</th></tr></thead>
+    <tbody>{% for c, _, d in columnas %}<tr><td><code>{{ c }}</code></td><td>{{ d }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <p class="nota-pie">Las cabeceras pueden estar en mayúsculas o minúsculas, y el orden de las columnas da igual.</p>
+</section>
+
+<section id="ejemplos" class="seccion">
+  <h2>Ejemplos</h2>
+  <p>Así queda la plantilla con ejemplos. Cada fila muestra una posibilidad distinta.</p>
+  <div class="desplazable">
+  <table class="tabla compacta ejemplo-excel">
+    <thead><tr>{% for c, _, _ in columnas %}<th>{{ c }}</th>{% endfor %}<th class="explica">Qué muestra</th></tr></thead>
+    <tbody>
+    {% for fila, explicacion in ejemplos %}
+      <tr>{% for c in claves %}<td class="{{ 'resaltado' if c in ('correcta', 'grupo', 'fija') and fila.get(c) }}">{{ fila.get(c, '') }}</td>{% endfor %}<td class="explica">{{ explicacion }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="varias" class="seccion">
+  <h2>Preguntas con varias respuestas correctas</h2>
+  <p>Escriba todas las letras correctas juntas en la columna <code>correcta</code>, por ejemplo <code>AB</code>. Conviene avisarlo en el enunciado («una o más respuestas»). El alumno marca en la hoja todas las que crea correctas.</p>
+  <p>Al configurar el examen se elige cómo puntuarlas. Con la respuesta correcta <strong>AB</strong>, acierto +{{ cfg.valor_bien|dec(1) }} y fallo {{ cfg.valor_mal|dec(1) }}:</p>
+  <table class="tabla compacta tabla-estrecha">
+    <thead><tr><th>Marca el alumno</th><th class="num">Puntuación parcial</th><th class="num">Solo exacta</th></tr></thead>
+    <tbody>
+    {% for m, (pts, est) in parcial %}
+      <tr><td>{{ m or '(en blanco)' }}</td><td class="num">{{ pts|dec }}</td><td class="num">{{ exacta[m]|dec }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="nota-pie">Puntuación parcial: (aciertos − errores) / nº de correctas, sin bajar de 0. Si no acierta ninguna, cuenta como fallo. En blanco siempre vale 0.</p>
+</section>
+
+<section id="modelos" class="seccion">
+  <h2>Grupos y modelos</h2>
+  <p>Los modelos (A, B, C…) se crean en el paso 2 de cada examen. A cada modelo se le indican los <strong>grupos</strong> que usa, separados por comas. La columna <code>grupo</code> del banco dice a qué grupo pertenece cada pregunta.</p>
+  <ul class="lista-ayuda">
+    <li>El modelo toma <strong>todas</strong> las preguntas de sus grupos.</li>
+    <li>Si no llegan al número de preguntas del examen, el resto se elige <strong>al azar entre las preguntas sin grupo</strong>, distintas en cada modelo.</li>
+    <li>Si hay más de las necesarias, se eligen al azar entre ellas.</li>
+    <li>Un modelo sin grupos toma todas sus preguntas al azar de todo el banco.</li>
+  </ul>
+  <p>Con el banco de ejemplo (grupo 1: preguntas 1 y 2; grupo 2: 3 y 4; sin grupo: 5, 6 y 7) y un examen de {{ n_ejemplo }} preguntas, la tabla de modelos mostraría:</p>
+  <table class="tabla compacta tabla-estrecha">
+    <thead><tr><th>Modelo</th><th>Grupos</th><th>Preguntas</th></tr></thead>
+    <tbody>{% for m, g, t in modelos %}<tr><td>{{ m }}</td><td>{{ g or '(vacío)' }}</td><td><span class="chip">{{ t }}</span></td></tr>{% endfor %}</tbody>
+  </table>
+  <p class="nota-pie">Al imprimir, las copias alternan los modelos (A, B, C, D, A…) para que alumnos contiguos tengan exámenes distintos. Cada copia lleva un QR con su modelo, así que da igual en qué orden se escaneen.</p>
+</section>
+
+<section id="desorden" class="seccion">
+  <h2>Desorden de preguntas y opciones</h2>
+  <p>Cada modelo desordena el orden de las preguntas y el de sus opciones (ambas cosas se pueden desactivar en la configuración). Algunas opciones no deben moverse:</p>
+  <ul class="lista-ayuda">
+    <li>Las que empiezan por <strong>«Todas…»</strong> o <strong>«Ninguna…»</strong> se quedan en su sitio automáticamente.</li>
+    <li>Para fijar otras, escriba sus letras en la columna <code>fija</code> (por ejemplo <code>ABC</code> si el orden importa).</li>
+    <li>Si una pregunta tiene menos de cuatro opciones (verdadero/falso), deje vacías las últimas: no se imprimen.</li>
+  </ul>
+</section>
+
+<section id="explicacion" class="seccion">
+  <h2>Explicación de la respuesta correcta</h2>
+  <p>La columna <code>explicacion</code> es opcional. Si escribe en ella por qué la respuesta correcta lo es, Aspa la muestra en la pantalla de revisión, bajo el enunciado y las opciones de la pregunta, <strong>cuando el alumno no la ha acertado</strong> (fallada, con puntuación parcial, en blanco o pendiente de revisar). En las preguntas acertadas no aparece.</p>
+  <ul class="lista-ayuda">
+    <li>Es especialmente útil en el <strong>modo revisión con el alumno</strong>: al pasar el ratón por una pregunta fallada, el alumno ve qué marcó, cuál era la correcta y por qué.</li>
+    <li>En la tabla de respuestas, las preguntas falladas que tienen explicación llevan el símbolo <strong>ⓘ</strong>.</li>
+    <li>Las explicaciones no se imprimen en el examen.</li>
+    <li>Se pueden añadir o corregir <strong>después de generar el examen</strong>: basta con volver a subir el banco con la columna rellena. Mientras no cambie el resto de las preguntas, el examen ya impreso sigue corrigiéndose igual.</li>
+  </ul>
+</section>
+
+<section id="imagenes" class="seccion">
+  <h2>Imágenes</h2>
+  <p>Las imágenes no van en el Excel: se suben en el paso 1 de cada examen («Imágenes del examen»). Se imprimen al final de cada examen, en el orden de la lista y con su pie («Imagen 1», «Imagen 2»… o el texto que elija). En el enunciado se hace referencia a ellas por ese pie, por ejemplo «Según la imagen 1, ¿qué tipo de fotograma está representado en el número 5?».</p>
+  <p class="nota-pie">Si prefiere montar una composición con varias imágenes ya rotuladas, súbala como una sola imagen y deje el pie vacío.</p>
+</section>
+
+<section id="idiomas" class="seccion">
+  <h2>Exámenes en otro idioma</h2>
+  <p>Cada examen tiene un <strong>idioma del examen impreso</strong>, que se elige al crearlo o en el paso 2 (Configuración). Aspa traduce a ese idioma la hoja de respuestas, las instrucciones para el alumno y el PDF «Soluciones por modelo». <strong>Las preguntas no se traducen</strong>: se imprimen tal como están escritas en el banco. Por eso, si el examen se imprime en inglés, el banco de preguntas tiene que estar en inglés.</p>
+  <h3>Ejemplo: estudiantes Erasmus</h3>
+  <p>Si en un grupo hay estudiantes Erasmus que hacen el examen en inglés, lo más cómodo es preparar dos exámenes de la misma convocatoria:</p>
+  <ol class="lista-ayuda">
+    <li>El examen habitual, en español, para el grupo.</li>
+    <li>Un segundo examen creado con «Partir de un examen anterior» a partir del primero (así se copian los modelos, la puntuación y la configuración), con el <strong>idioma del examen impreso en inglés</strong>.</li>
+    <li>En ese segundo examen se sube el banco con las preguntas traducidas. Conviene mantener los mismos <code>id</code> y <code>grupo</code> que en el banco en español, para que los modelos se formen igual y la estadística sea comparable.</li>
+    <li>Como lista de clase basta con la de los estudiantes Erasmus (o la lista completa).</li>
+  </ol>
+  <p>Cada examen se imprime, escanea y corrige por separado. Si por error se sube una hoja en el examen equivocado, Aspa lo detecta por el QR y avisa de que la hoja es de otro examen.</p>
+</section>
+{% endblock %}

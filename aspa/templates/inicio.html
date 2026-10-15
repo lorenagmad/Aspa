@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campos_examen, campo_idioma_examen with context %}
+{% block contenido %}
+<section class="portada portada-idioma">
+  <div>
+    <h1>Aspa</h1>
+    <p class="lema">{{ _('Exámenes tipo test: generar, corregir y revisar') }}</p>
+    <p class="entradilla">{{ _('Cada examen es un proyecto: banco de preguntas, modelos, PDF para imprimir, escaneos y notas. Todo se guarda en una carpeta de su ordenador.') }}</p>
+  </div>
+  <form method="post" action="{{ url_for('cambiar_idioma') }}" class="selector-idioma">
+    <input type="hidden" name="volver" value="{{ url_for('inicio') }}">
+    <label for="sel-idioma-inicio" class="selector-idioma-titulo">{{ _('Idioma') }}{% if idioma != 'en' %} · Language{% endif %}</label>
+    <select id="sel-idioma-inicio" name="idioma" onchange="this.form.submit()">
+      {% for cod, nom in idiomas.items() %}<option value="{{ cod }}" lang="{{ cod }}" {{ 'selected' if cod == idioma }}>{{ nom }}</option>{% endfor %}
+    </select>
+    <noscript><button class="boton pequeno">OK</button></noscript>
+  </form>
+</section>
+
+<div class="dos-columnas">
+  <section class="panel">
+    <h2>{{ _('Nuevo examen') }}</h2>
+    <form method="post" action="{{ url_for('nuevo') }}" class="formulario">
+      {{ campos_examen(nuevo, convocatorias_fijas, asignaturas) }}
+      <div class="dos-campos">
+        <label>{{ _('Tipo de examen') }}
+          <select name="tipo">
+            <option value="modelos">{{ _('Por modelos (copias iguales de cada modelo)') }}</option>
+            <option value="personalizado">{{ _('Personalizado (uno por alumno, sin sus preguntas superadas)') }}</option>
+          </select>
+        </label>
+        {{ campo_idioma_examen(idioma) }}
+      </div>
+      {% if proyectos %}
+      <label>{{ _('Partir de un examen anterior') }} <small>({{ _('copia preguntas, alumnos y configuración; los datos de arriba se mantienen') }})</small>
+        <select name="copiar_de">
+          <option value="">— {{ _('Empezar en blanco') }} —</option>
+          {% for x in proyectos %}<option value="{{ x.id }}">{{ x.asignatura ~ " · " if x.asignatura }}{{ x.titulo }}{% if x.convocatoria or x.curso %} · {{ _(x.convocatoria) if x.convocatoria }} {{ x.curso }}{% endif %}</option>{% endfor %}
+        </select>
+      </label>
+      {% endif %}
+      <button class="boton principal">{{ _('Crear examen') }}</button>
+    </form>
+  </section>
+
+  <section class="panel tenue">
+    <h2>{{ _('Plantillas y ayuda') }}</h2>
+    {% for tipo, titulo, texto, ayuda in [
+        ('preguntas', _('Banco de preguntas'), _('Cómo se escriben las preguntas, las respuestas múltiples, los grupos y los modelos.'), 'ayuda_preguntas'),
+        ('alumnos', _('Lista de alumnos'), _('Documento (DNI, NIE o pasaporte) y nombre. También vale tal cual la lista de clase que exporta el sistema de gestión académica de su universidad.'), 'ayuda_alumnos'),
+        ('personalizado', _('Exámenes personalizados'), _('Un único Excel con las preguntas y la lista de alumnos, con las preguntas que cada uno ya tiene superadas.'), 'ayuda_personalizado')] %}
+    <div class="plantilla-bloque">
+      <h3>{{ titulo }}</h3>
+      <p>{{ texto }}</p>
+      <p class="botones">
+        <a class="boton pequeno" href="{{ url_for(ayuda) }}">{{ _('Ver explicación') }}</a>
+        <a class="boton pequeno" href="{{ url_for('descargar_plantilla', tipo=tipo, version='limpia') }}">{{ _('Plantilla limpia') }}</a>
+        <a class="boton pequeno" href="{{ url_for('descargar_plantilla', tipo=tipo, version='ejemplo') }}">{{ _('Plantilla con ejemplos') }}</a>
+      </p>
+    </div>
+    {% endfor %}
+  </section>
+</div>
+
+{% if proyectos %}
+<section>
+  <h2>{{ _('Exámenes') }}</h2>
+  <div class="filtros filtros-inicio" role="search">
+    <label>{{ _('Estado') }}
+      <select data-filtro="estado">
+        <option value="">{{ _('Todos') }}</option>
+        {% for k, v in estados.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>{{ _('Asignatura') }}
+      <select data-filtro="asignatura">
+        <option value="">{{ _('Todas') }}</option>
+        {% for a in asignaturas %}<option>{{ a }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>{{ _('Convocatoria') }}
+      <select data-filtro="convocatoria">
+        <option value="">{{ _('Todas') }}</option>
+        {% for a in convocatorias %}<option value="{{ a }}">{{ _(a) }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>{{ _('Curso') }}
+      <select data-filtro="curso">
+        <option value="">{{ _('Todos') }}</option>
+        {% for a in cursos %}<option>{{ a }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="buscar">{{ _('Buscar') }}
+      <input type="search" id="buscar" placeholder="{{ _('Título…') }}">
+    </label>
+    <span class="tenue" id="contador" aria-live="polite"></span>
+  </div>
+
+  <form method="post" action="{{ url_for('borrar_examenes') }}" id="form-borrar">
+    <table class="tabla" id="tabla-examenes">
+      <thead><tr>
+        <th class="col-sel"><input type="checkbox" id="todos" aria-label="{{ _('Seleccionar todos los visibles') }}"></th>
+        <th>{{ _('Examen') }}</th><th>{{ _('Asignatura') }}</th><th>{{ _('Convocatoria') }}</th><th>{{ _('Curso') }}</th><th>{{ _('Estado') }}</th><th class="num">{{ _('Hojas') }}</th><th>{{ _('Modificado') }}</th>
+      </tr></thead>
+      <tbody>
+      {% for x in proyectos %}
+        <tr data-estado="{{ x.estado }}" data-asignatura="{{ x.asignatura }}" data-convocatoria="{{ x.convocatoria }}" data-curso="{{ x.curso }}" data-titulo="{{ x.titulo|lower }}">
+          <td class="col-sel"><input type="checkbox" name="ids" value="{{ x.id }}" aria-label="{{ _('Seleccionar {titulo}', titulo=x.titulo) }}"></td>
+          <td><a href="{{ url_for('preparar', pid=x.id) }}">{{ x.titulo }}</a>{% if x.tipo == 'personalizado' %} <small class="tenue">· {{ _('personalizado') }}</small>{% endif %}</td>
+          <td>{{ x.asignatura }}</td>
+          <td>{{ _(x.convocatoria) if x.convocatoria }}</td>
+          <td>{{ x.curso }}</td>
+          <td><span class="chip estado-{{ x.estado }}">{{ x.estado_txt }}</span></td>
+          <td class="num">{{ x.hojas or '' }}</td>
+          <td>{{ x.modificado }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="acciones-tabla">
+      <button class="boton pequeno peligro" id="btn-borrar" disabled>{{ _('Mover a la papelera') }}</button>
+      <small>{{ _('Los exámenes no se borran del todo: se guardan en') }} <code>{{ papelera }}</code>.</small>
+    </p>
+  </form>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const T = {{ {
+  'n': _('{n} exámenes'),
+  'n_de': _('{v} de {n} exámenes'),
+  'borrar': _('Mover a la papelera'),
+  'borrar_n': _('Mover a la papelera ({n})'),
+  'confirmar': _('¿Mover a la papelera {n} examen(es)?'),
+}|tojson }};
+const fmt = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k]);
+const filas = [...document.querySelectorAll('#tabla-examenes tbody tr')];
+const selects = [...document.querySelectorAll('[data-filtro]')];
+const buscar = document.getElementById('buscar');
+const contador = document.getElementById('contador');
+const todos = document.getElementById('todos');
+const btn = document.getElementById('btn-borrar');
+
+function filtrar() {
+  const q = (buscar?.value || '').trim().toLowerCase();
+  let visibles = 0;
+  filas.forEach(tr => {
+    const ok = selects.every(s => !s.value || tr.dataset[s.dataset.filtro] === s.value)
+      && (!q || tr.dataset.titulo.includes(q));
+    tr.hidden = !ok;
+    if (!ok) tr.querySelector('input').checked = false;
+    if (ok) visibles++;
+  });
+  if (contador) contador.textContent = visibles === filas.length ? fmt(T.n, {n: filas.length}) : fmt(T.n_de, {v: visibles, n: filas.length});
+  actualizar();
+}
+function actualizar() {
+  const n = filas.filter(tr => tr.querySelector('input').checked).length;
+  if (btn) { btn.disabled = n === 0; btn.textContent = n ? fmt(T.borrar_n, {n}) : T.borrar; }
+}
+selects.forEach(s => s.addEventListener('change', filtrar));
+buscar?.addEventListener('input', filtrar);
+filas.forEach(tr => tr.querySelector('input').addEventListener('change', actualizar));
+todos?.addEventListener('change', () => {
+  filas.filter(tr => !tr.hidden).forEach(tr => tr.querySelector('input').checked = todos.checked);
+  actualizar();
+});
+document.getElementById('form-borrar')?.addEventListener('submit', e => {
+  const titulos = filas.filter(tr => tr.querySelector('input').checked).map(tr => '· ' + tr.cells[1].textContent.trim());
+  if (!confirm(fmt(T.confirmar, {n: titulos.length}) + '\n\n' + titulos.join('\n'))) e.preventDefault();
+});
+filtrar();
+</script>
+{% endblock %}

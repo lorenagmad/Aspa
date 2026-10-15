@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block titulo %}How to prepare a personalised exam{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('inicio') }}">← Back to home</a></p>
+<h1>How to prepare a personalised exam</h1>
+<p class="entradilla">One exam per student, with their name printed and without the questions they have already passed in class (quizzes, activities…). Those questions count as correct and the grade is calculated over the full exam.</p>
+<p class="botones">
+  <a class="boton principal" href="{{ url_for('descargar_plantilla', tipo='personalizado', version='limpia') }}">Download blank template</a>
+  <a class="boton" href="{{ url_for('descargar_plantilla', tipo='personalizado', version='ejemplo') }}">Download template with examples</a>
+</p>
+
+<nav class="indice" aria-label="Contents">
+  <a href="#fichero">A single file</a> · <a href="#superadas">Passed questions</a> · <a href="#modelos">Versions and assignment</a> ·
+  <a href="#nota">Scoring</a> · <a href="#reserva">Spare exams</a> · <a href="#pasos">Steps in Aspa</a>
+</nav>
+
+<section id="fichero" class="seccion">
+  <h2>A single file with two sheets</h2>
+  <p>The template is an Excel file with a <code>questions</code> sheet (the bank, as in any exam) and a <code>students</code> sheet (the class list with one extra column, <code>passed</code>). Upload it whole in <strong>Question bank</strong> and Aspa takes the student list from the same file; there is no need to upload it separately. If you prefer two files, that also works: a list uploaded in «Class list» takes priority.</p>
+  <div class="dos-columnas">
+    <div>
+      <h3>«questions» sheet</h3>
+      <div class="desplazable">
+      <table class="tabla compacta ejemplo-excel">
+        <thead><tr><th>id</th><th>question</th><th>correct</th><th>group</th></tr></thead>
+        <tbody>{% for f, expl in ej_preguntas %}<tr><td class="resaltado">{{ f.id }}</td><td>{{ f.pregunta }}</td><td>{{ f.correcta }}</td><td>{{ f.grupo }}</td></tr>{% endfor %}</tbody>
+      </table>
+      </div>
+      <p class="nota-pie">Only some columns are shown; the full explanation of the bank is in <a href="{{ url_for('ayuda_preguntas') }}">How to prepare the question bank</a>.</p>
+    </div>
+    <div>
+      <h3>«students» sheet</h3>
+      <table class="tabla compacta ejemplo-excel">
+        <thead><tr><th>document</th><th>name</th><th>passed</th></tr></thead>
+        <tbody>{% for f, expl in ej_alumnos %}<tr><td>{{ f.documento }}</td><td>{{ f.nombre }}</td><td class="{{ 'resaltado' if f.superadas }}">{{ f.superadas }}</td></tr>{% endfor %}</tbody>
+      </table>
+      <p class="nota-pie">The sheet may also be called «names» (or «alumnos», «nombres»). The university class list works too if you add the «passed» column.</p>
+    </div>
+  </div>
+</section>
+
+<section id="superadas" class="seccion">
+  <h2>Passed questions</h2>
+  <ul class="lista-ayuda">
+    <li>In the <code>passed</code> column, write the <strong>ids</strong> of the bank questions the student has already passed, separated by commas: <code>1, 2</code>.</li>
+    <li>Those questions <strong>are removed from their exam</strong> and each counts as fully correct.</li>
+    <li>If the cell is empty, the student gets the full exam, still with their name printed.</li>
+    <li>If an id does not exist in the bank, Aspa warns you in step 1 before generating.</li>
+  </ul>
+</section>
+
+<section id="modelos" class="seccion">
+  <h2>Versions and assignment</h2>
+  <p>Versions are defined as in any exam, using the bank groups (step 2). Each student is assigned <strong>a version that contains all their passed questions</strong>; if several do, students are spread across them. Their exam is that version's questions minus the passed ones, in random order.</p>
+  <p>With the examples above, an exam of {{ n }} questions and versions {% for m in modelos %}<strong>{{ m.nombre }}</strong> (group {{ m.grupos }}){{ ' and ' if not loop.last }}{% endfor %}, the result would be:</p>
+  <table class="tabla compacta tabla-estrecha">
+    <thead><tr><th>Student</th><th>Passed</th><th>Version</th><th class="num">Questions in their exam</th></tr></thead>
+    <tbody>
+    {% for a in plan %}
+      <tr><td>{{ a.nombre }}</td><td>{{ a.superadas|join(', ') or '—' }}</td><td>{{ modelos[a.modelo].nombre }}</td><td class="num">{{ a.n_examen }} of {{ n }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="nota-pie">Ana has passed questions 1 and 2, which belong to group 1, so she gets version A. Giulia has passed question 3, from group 2, and gets version B. Students with nothing passed are spread across both. Since each group has 2 questions and the exam has 4, the rest are filled at random with questions without a group.</p>
+</section>
+
+<section id="nota" class="seccion">
+  <h2>Scoring</h2>
+  <p>Each passed question counts as fully correct and the grade is calculated over the full exam. For example, Ana ({{ ejemplo.superadas }} passed) answers the {{ ejemplo.total - ejemplo.superadas }} questions in her exam: {{ ejemplo.bien }} correct and {{ ejemplo.mal }} wrong.</p>
+  <table class="tabla compacta tabla-estrecha">
+    <tbody>
+      <tr><td>Passed</td><td class="num">{{ ejemplo.superadas }} × {{ cfg.valor_bien|dec(1) }} = {{ (ejemplo.superadas * cfg.valor_bien)|dec }}</td></tr>
+      <tr><td>Correct</td><td class="num">{{ ejemplo.bien }} × {{ cfg.valor_bien|dec(1) }} = {{ (ejemplo.bien * cfg.valor_bien)|dec }}</td></tr>
+      <tr><td>Wrong</td><td class="num">{{ ejemplo.mal }} × {{ ejemplo.valor_mal|dec(1) }} = {{ (ejemplo.mal * ejemplo.valor_mal)|dec }}</td></tr>
+      <tr><td><strong>Points</strong></td><td class="num"><strong>{{ ejemplo.puntos|dec }} of {{ ejemplo.total }}</strong></td></tr>
+      <tr><td><strong>Grade</strong></td><td class="num"><strong>{{ ejemplo.nota|dec }} out of {{ cfg.nota_maxima|dec(0) }}</strong></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="reserva" class="seccion">
+  <h2>Spare exams</h2>
+  <p>For anyone not on the list (late enrolment, change of group…) you can print spare exams: full, not personalised and with the boxes to mark the ID number, as in an exam by versions. You set how many in step 2 and they come at the end of the PDF.</p>
+</section>
+
+<section id="pasos" class="seccion">
+  <h2>Steps in Aspa</h2>
+  <ol class="lista-ayuda">
+    <li>Create the exam choosing the <strong>Personalised</strong> type (it can also be changed in step 2).</li>
+    <li>In step 1, upload the Excel file in <strong>Question bank</strong>. A table appears with each student, their passed questions, the assigned version and how many questions they will get; check the warnings.</li>
+    <li>If questions refer to images, upload them in <strong>Exam images</strong>.</li>
+    <li>In step 2, define the versions, the number of questions in the full exam and the spare exams.</li>
+    <li>Generate and print. The PDF is sorted alphabetically.</li>
+    <li>Grading works as in any exam: the student is identified by the QR code on their sheet.</li>
+  </ol>
+</section>
+{% endblock %}
