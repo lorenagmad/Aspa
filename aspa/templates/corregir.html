@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block titulo %}{{ cfg.titulo }} · {{ _('Corregir') }}{% endblock %}
+{% block contenido %}
+<h1><span class="paso-num">4</span> {{ _('Escanear y revisar') }}</h1>
+
+{% if not gen %}
+  <div class="aviso error">{{ _('Primero genere los exámenes (paso 3).') }}</div>
+{% else %}
+<div class="dos-columnas estrecha">
+  <form class="panel zona-subida" id="zona" method="post" enctype="multipart/form-data" action="{{ url_for('subir_escaneos', pid=p.id) }}">
+    <h2>{{ _('Añadir escaneos') }}</h2>
+    <p>{{ _('Arrastre aquí las imágenes (JPG, PNG, TIFF) o PDF, una página por examen o un PDF con todas.') }}</p>
+    <input type="file" name="ficheros" multiple accept=".jpg,.jpeg,.png,.tif,.tiff,.bmp,.webp,.pdf" id="ficheros">
+    <input type="hidden" name="leer" value="1">
+    <button class="boton principal">{{ _('Subir y leer') }}</button>
+  </form>
+  <div class="panel">
+    <h2>{{ _('Lectura') }}</h2>
+    <div id="progreso" {% if not leyendo %}hidden{% endif %}>
+      <progress max="1" value="0"></progress> <span>{{ _('Leyendo…') }}</span>
+    </div>
+    {% if pendientes %}
+      <p>{{ _('{n} fichero(s) sin leer.', n=pendientes|length) }}</p>
+      <form method="post" action="{{ url_for('lanzar_lectura', pid=p.id) }}"><button class="boton">{{ _('Leer pendientes') }}</button></form>
+    {% elif res %}
+      <p>{{ _('Todos los escaneos están leídos.') }}</p>
+    {% else %}
+      <p>{{ _('Aún no hay escaneos.') }}</p>
+    {% endif %}
+    {% if res %}
+    <details class="desplegable">
+      <summary>{{ _('Opciones avanzadas') }}</summary>
+      <form method="post" action="{{ url_for('lanzar_lectura', pid=p.id) }}">
+        <input type="hidden" name="forzar" value="1">
+        <button class="boton pequeno">{{ _('Volver a leer todo') }}</button>
+        <small>{{ _('Las revisiones manuales se conservan.') }}</small>
+      </form>
+      <form method="post" action="{{ url_for('borrar_correccion', pid=p.id) }}" class="borrar">
+        <label>{{ _('Para reutilizar el examen, borre escaneos, lecturas y revisiones. Escriba {palabra}:', palabra=_('BORRAR')) }}
+          <input name="confirmar" size="8" autocomplete="off"></label>
+        <button class="boton pequeno peligro">{{ _('Borrar corrección') }}</button>
+      </form>
+    </details>
+    {% endif %}
+  </div>
+</div>
+
+{% if res %}
+<section class="resumen">
+  <div><span class="cifra">{{ resumen.hojas }}</span> {{ _('hojas') }}</div>
+  <div class="{{ 'por-revisar' if resumen.revisar }}"><span class="cifra">{{ resumen.revisar }}</span> {{ _('por revisar') }}</div>
+  <div><span class="cifra">{{ resumen.media|dec or "—" }}</span> {{ _('nota media') }}</div>
+  <div><span class="cifra">{{ resumen.aprobados }}</span> {{ _('aprobados') }}</div>
+  <a class="boton" href="{{ url_for('descargar', pid=p.id, nombre='notas.xlsx') }}">{{ _('Exportar a Excel') }}</a>
+</section>
+
+<div class="filtros">
+  {{ _('Ordenar por:') }}
+  {% for k, t in [('archivo',_('archivo')),('estado',_('pendientes primero')),('nombre',_('nombre')),('nota',_('nota'))] %}
+    <a href="?orden={{ k }}" class="{{ 'activo' if orden==k }}">{{ t }}</a>
+  {% endfor %}
+  <label class="casilla"><input type="checkbox" id="solo-revisar"> {{ _('Solo las que hay que revisar') }}</label>
+</div>
+<table class="tabla" id="tabla-hojas">
+  <thead><tr><th>{{ _('Archivo') }}</th><th>{{ _('Alumno') }}</th><th>{{ _('Modelo') }}</th><th class="num">{{ _('Nota') }}</th><th>{{ _('Estado') }}</th><th>{{ _('Incidencias') }}</th></tr></thead>
+  <tbody>
+  {% for r in res %}
+    <tr class="fila-{{ r.estado }}" data-estado="{{ r.estado }}">
+      <td><a href="{{ url_for('hoja', pid=p.id, clave=r.clave) }}">{{ r.clave }}</a></td>
+      <td>{% if r.alumno %}{{ r.alumno.nombre or r.alumno.documento }}{% elif r.id_leido %}<span class="tenue">{{ r.id_leido }}</span>{% endif %}</td>
+      <td>{{ r.modelo_nombre or '' }}</td>
+      <td class="num nota">{{ r.get("nota")|dec }}</td>
+      <td>{% if r.estado == 'ok' %}<span class="chip ok">{{ _('Revisada') if r.visto else _('Correcta') }}</span>
+          {% elif r.estado == 'revisar' %}<span class="chip pendiente">{{ _('Revisar') }}</span>
+          {% elif r.estado == 'vacia' %}<span class="chip tenue" title="{{ r.incidencias|join(' ') }}">{{ _('Ignorada') }}</span>
+          {% else %}<span class="chip mal">{{ _('No se pudo leer') }}</span>{% endif %}</td>
+      <td class="incidencias">{{ r.incidencias|join(' · ') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const T = {{ {'subiendo': _('Subiendo…'), 'leyendo': _('Leyendo fichero {i} de {n}…'), 'error': _('Error al leer:')}|tojson }};
+const zona = document.getElementById('zona');
+if (zona) {
+  const input = document.getElementById('ficheros');
+  ['dragenter','dragover'].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.add('encima'); }));
+  ['dragleave','drop'].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.remove('encima'); }));
+  zona.addEventListener('drop', e => { input.files = e.dataTransfer.files; zona.submit(); });
+  zona.addEventListener('submit', () => zona.querySelector('button').textContent = T.subiendo);
+}
+const prog = document.getElementById('progreso');
+if (prog && !prog.hidden) {
+  const barra = prog.querySelector('progress'), txt = prog.querySelector('span');
+  const t = setInterval(async () => {
+    const e = await (await fetch('{{ url_for("estado_lectura", pid=p.id) }}')).json();
+    if (e.total) { barra.max = e.total; barra.value = e.hechos; txt.textContent = T.leyendo.replace('{i}', e.hechos).replace('{n}', e.total); }
+    if (!e.activo) { clearInterval(t); if (e.error) alert(T.error + ' ' + e.error); location.reload(); }
+  }, 800);
+}
+const solo = document.getElementById('solo-revisar');
+if (solo) {
+  solo.checked = localStorage.getItem('soloRevisar') === '1';
+  const aplicar = () => {
+    document.querySelectorAll('#tabla-hojas tbody tr').forEach(tr => {
+      tr.hidden = solo.checked && !['revisar','error'].includes(tr.dataset.estado);
+    });
+    localStorage.setItem('soloRevisar', solo.checked ? '1' : '0');
+  };
+  solo.addEventListener('change', aplicar); aplicar();
+}
+</script>
+{% endblock %}

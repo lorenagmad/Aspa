@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ idioma }}"><head><meta charset="utf-8"><title>{{ _('Aspa cerrado') }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}"></head>
+<body>
+<header class="barra"><span class="marca">Aspa</span></header>
+<main class="contenido solo">
+  <section class="portada">
+    <h1>{{ _('Aspa se ha cerrado') }}</h1>
+    <p class="entradilla">{{ _('Todo lo que había hecho está guardado. Ya puede cerrar esta pestaña.') }}</p>
+    <p>{{ _('Para volver a usarlo, ábralo de nuevo con «iniciar» (doble clic).') }}</p>
+  </section>
+</main>
+<script>setTimeout(() => { try { window.close(); } catch (e) {} }, 600);</script>
+</body></html>
