@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campos_examen, campo_idioma_examen with context %}
+{% block titulo %}{{ cfg.titulo }} · {{ _('Preparar') }}{% endblock %}
+{% block contenido %}
+{% set pers = cfg.tipo == 'personalizado' %}
+
+<section id="preguntas" class="seccion">
+  <h1><span class="paso-num">1</span> {{ _('Preguntas y alumnos') }}</h1>
+  <p class="tipo-examen">{{ _('Tipo de examen') }}: <strong>{{ _('Personalizado (uno por alumno, sin sus preguntas superadas)') if pers else _('Por modelos (copias iguales de cada modelo)') }}</strong> · {{ _('Idioma del examen') }}: <strong>{{ idiomas.get(cfg.idioma_examen, cfg.idioma_examen) }}</strong> · <a href="#config">{{ _('cambiar') }}</a></p>
+  <div class="dos-columnas">
+    <div class="panel">
+      <h2>{{ _('Banco de preguntas') }}</h2>
+      {% if pers %}<p class="nota-pie">{{ _('Examen personalizado: puede subir aquí un único Excel con las hojas «preguntas» y «alumnos» (con la columna «superadas»).') }} <a href="{{ url_for('ayuda_personalizado') }}" target="_blank">{{ _('Ver cómo') }}</a> · <a href="{{ url_for('descargar_plantilla', tipo='personalizado', version='ejemplo') }}">{{ _('plantilla con ejemplos') }}</a></p>{% endif %}
+      {% if preguntas %}
+        {% set grupos = preguntas|map(attribute='grupo')|reject('equalto','')|unique|list %}
+        <p class="dato">{{ _('{n} preguntas', n='<strong>%d</strong>'|format(preguntas|length))|safe }}{% if grupos %} {{ _('en los grupos {grupos}', grupos=grupos|sort|join(', ')) }}{% endif %}</p>
+      {% elif error_banco %}
+        <p class="error-texto">{{ error_banco }}</p>
+      {% else %}
+        <p>{{ _('Suba un Excel (.xlsx) o CSV con las preguntas. Puede partir de la plantilla limpia o de la plantilla con ejemplos.') }}</p>
+      {% endif %}
+      {% for a in avisos %}<p class="aviso-linea">{{ a }}</p>{% endfor %}
+      {% if cfg.idioma_examen != idioma %}
+        {% set nom_idioma = idiomas.get(cfg.idioma_examen, cfg.idioma_examen) %}
+        <p class="nota-idioma"><strong>{{ _('Idioma del examen impreso') }}: {{ nom_idioma }}.</strong> {{ _('Aspa traduce la hoja de respuestas y las instrucciones, pero no las preguntas: el banco debe estar escrito en ese idioma.') }}
+          <a href="{{ url_for('ayuda_preguntas') }}#idiomas" target="_blank">{{ _('Cómo preparar un examen en otro idioma') }}</a></p>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" action="{{ url_for('subir', pid=p.id, tipo='preguntas') }}" class="subida">
+        <input type="file" name="fichero" accept=".xlsx,.xlsm,.csv" required>
+        <button class="boton">{{ _('Reemplazar banco') if preguntas else _('Subir banco') }}</button>
+      </form>
+      <p class="nota-pie"><a href="{{ url_for('ayuda_preguntas') }}" target="_blank">{{ _('Cómo rellenarlo') }}</a> ·
+        <a href="{{ url_for('descargar_plantilla', tipo='preguntas', version='limpia') }}">{{ _('plantilla limpia') }}</a> ·
+        <a href="{{ url_for('descargar_plantilla', tipo='preguntas', version='ejemplo') }}">{{ _('plantilla con ejemplos') }}</a></p>
+    </div>
+    <div class="panel" id="alumnos">
+      <h2>{{ _('Lista de clase') }}</h2>
+      {% if alumnos %}
+        <p class="dato">{{ _('{n} alumnos', n='<strong>%d</strong>'|format(alumnos|length))|safe }}{% if pers %} · {{ _('{n} con preguntas superadas', n=alumnos|selectattr('superadas')|list|length) }}{% endif %}</p>
+        <p class="nota-pie">{{ _('Ejemplo') }}: {{ alumnos[0].documento }} · {{ alumnos[0].nombre }}{% if alumnos[0].superadas %} · {{ _('superadas') }} {{ alumnos[0].superadas|join(', ') }}{% endif %}</p>
+        {% if not p.fichero_alumnos() %}<p class="nota-pie">{{ _('Tomada de la hoja «alumnos» o «nombres» del fichero de preguntas. Si sube otra lista aquí, tendrá prioridad.') }}</p>{% endif %}
+      {% else %}
+        <p>{{ _('Suba la lista de clase que exporta el sistema de gestión académica de su universidad o un Excel con columnas «documento» y «nombre».') }}{% if pers %} {{ _('Para el examen personalizado, también «superadas» (números de las preguntas superadas en clase, separados por comas).') }}{% endif %} {{ _('Si el banco de preguntas tiene una hoja «nombres» o «alumnos», se usa esa.') }}</p>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" action="{{ url_for('subir', pid=p.id, tipo='alumnos') }}" class="subida">
+        <input type="file" name="fichero" accept=".xlsx,.xlsm,.csv" required>
+        <button class="boton">{{ _('Reemplazar lista') if p.fichero_alumnos() else _('Subir lista') }}</button>
+      </form>
+      <p class="nota-pie"><a href="{{ url_for('ayuda_alumnos') }}" target="_blank">{{ _('Cómo rellenarla') }}</a> ·
+        <a href="{{ url_for('descargar_plantilla', tipo='alumnos', version='limpia') }}">{{ _('plantilla limpia') }}</a> ·
+        <a href="{{ url_for('descargar_plantilla', tipo='alumnos', version='ejemplo') }}">{{ _('plantilla con ejemplos') }}</a></p>
+    </div>
+  </div>
+  {% if preguntas %}
+  <details class="desplegable">
+    <summary>{{ _('Ver las {n} preguntas', n=preguntas|length) }}</summary>
+    <table class="tabla compacta">
+      <thead><tr><th>{{ _('Id') }}</th><th>{{ _('Grupo') }}</th><th>{{ _('Pregunta') }}</th><th>{{ _('Correcta') }}</th></tr></thead>
+      <tbody>
+      {% for q in preguntas %}
+        <tr><td>{{ q.id }}</td><td>{{ q.grupo }}</td>
+          <td>{{ q.texto }}<ol type="A" class="opciones">{% for o in q.opciones %}{% if o %}<li class="{{ 'correcta' if loop.index0 in q.correctas }}">{{ o }}{% if loop.index0 in q.fijas %} <small>({{ _('fija') }})</small>{% endif %}</li>{% endif %}{% endfor %}</ol></td>
+          <td>{{ q.to_dict().correctas }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+
+  {% if pers and chk and chk.personalizado %}
+  {% set plan = chk.personalizado %}
+  <details class="desplegable" open>
+    <summary>{{ _('Exámenes personalizados: {n} alumnos', n=plan|length) }}{% set conav = plan|selectattr('avisos')|list %}{% if conav %} · <span class="error-texto">{{ _('{n} con avisos', n=conav|length) }}</span>{% endif %}</summary>
+    <p class="nota-pie">{{ _('Cada alumno va a un modelo que contiene todas sus preguntas superadas; si caben en varios, se reparten. Es una vista previa: el reparto definitivo y el orden de las preguntas se fijan al generar.') }}</p>
+    <table class="tabla compacta">
+      <thead><tr><th>{{ _('Alumno') }}</th><th>{{ _('Documento') }}</th><th>{{ _('Superadas') }}</th><th class="num">{{ _('Nº') }}</th><th>{{ _('Modelo') }}</th><th class="num">{{ _('Preguntas en su examen') }}</th><th>{{ _('Avisos') }}</th></tr></thead>
+      <tbody>
+      {% for a in plan %}
+        <tr>
+          <td>{{ a.nombre }}</td><td>{{ a.documento }}</td>
+          <td class="superadas-lista">{{ a.superadas|join(', ') or '—' }}</td>
+          <td class="num">{{ a.superadas|length }}</td>
+          <td>{{ cfg.modelos[a.modelo].nombre }}</td>
+          <td class="num">{{ a.n_examen }}</td>
+          <td class="error-texto">{{ a.avisos|join(' · ') }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% elif pers and preguntas and not alumnos %}
+    <div class="aviso error">{{ _('El examen personalizado necesita la lista de alumnos con sus preguntas superadas.') }}</div>
+  {% endif %}
+
+  <div class="panel imagenes-panel" id="imagenes">
+    <h2>{{ _('Imágenes del examen') }} <small>({{ _('opcional') }})</small></h2>
+    <p>{{ _('Se imprimen al final de cada examen, en el orden de la lista. En las preguntas se hace referencia a ellas por su pie (por ejemplo «Según la imagen 1…»). Puede subir una composición con varias imágenes y dejar el pie vacío.') }}</p>
+    {% if cfg.imagenes %}
+    <ul class="lista-imagenes">
+      {% for im in cfg.imagenes %}
+      <li>
+        <img src="{{ url_for('ver_imagen', pid=p.id, nombre=im.fichero) }}" alt="{{ im.pie or im.fichero }}">
+        <form method="post" action="{{ url_for('editar_imagen', pid=p.id, i=loop.index0) }}" class="pie-form">
+          <input type="hidden" name="accion" value="pie">
+          <label>{{ _('Pie') }} <input name="pie" value="{{ im.pie }}" placeholder="({{ _('sin pie') }})"></label>
+          <button class="boton pequeno">{{ _('Guardar') }}</button>
+        </form>
+        <div class="botones">
+          {% if not loop.first %}<form method="post" action="{{ url_for('editar_imagen', pid=p.id, i=loop.index0) }}"><input type="hidden" name="accion" value="subir"><button class="enlace">{{ _('Subir en la lista') }}</button></form>{% endif %}
+          <form method="post" action="{{ url_for('editar_imagen', pid=p.id, i=loop.index0) }}" onsubmit="return confirm({{ _('¿Quitar esta imagen?')|tojson|forceescape }})"><input type="hidden" name="accion" value="borrar"><button class="enlace peligro-texto">{{ _('Quitar') }}</button></form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('subir_imagenes', pid=p.id) }}" class="subida">
+      <input type="file" name="imagenes" accept=".png,.jpg,.jpeg,.gif,.bmp,.webp" multiple required>
+      <button class="boton">{{ _('Añadir imágenes') }}</button>
+    </form>
+  </div>
+</section>
+
+<section id="config" class="seccion">
+  <h1><span class="paso-num">2</span> {{ _('Configuración') }}</h1>
+  <form method="post" action="{{ url_for('guardar_config', pid=p.id) }}" class="formulario rejilla">
+    <fieldset class="ancho">
+      <legend>{{ _('Datos del examen') }}</legend>
+      <p class="nota-pie">{{ _('Cabecera impresa') }}: <strong>{{ cabecera[0] }}</strong>{% if cabecera[1] %} — {{ cabecera[1] }}{% endif %}</p>
+      {{ campos_examen(cfg, convocatorias_fijas, asignaturas) }}
+      <div class="dos-campos">
+        <label>{{ _('Subtítulo') }}
+          <input name="subtitulo" value="{{ cfg.subtitulo }}" placeholder="{{ _('opcional: grupo, aula…') }}">
+          <small>{{ _('Se imprime debajo del título.') }}</small>
+        </label>
+        {{ campo_idioma_examen(cfg.idioma_examen) }}
+      </div>
+      <label>{{ _('Instrucciones para el alumno') }}
+        <textarea name="descripcion" rows="5" placeholder="{{ descripcion_defecto }}">{{ cfg.descripcion }}</textarea>
+        <small>{{ _('Déjelo vacío para usar el texto estándar en el idioma del examen. Puede usar {n}, {bien} y {mal}; se sustituyen por el número de preguntas y las puntuaciones.') }} {{ _('Así quedará') }}: «{{ descripcion[:140] }}…»</small>
+      </label>
+    </fieldset>
+
+    <fieldset class="ancho">
+      <legend>{{ _('Tipo de examen') }}</legend>
+      <div class="opciones-tipo">
+        <label class="casilla tarjeta-tipo"><input type="radio" name="tipo" value="modelos" {{ 'checked' if not pers }}>
+          <span><strong>{{ _('Por modelos') }}</strong><br>{{ _('Varios modelos (A, B, C…) y copias iguales de cada uno. El alumno marca su documento en la hoja.') }}</span></label>
+        <label class="casilla tarjeta-tipo"><input type="radio" name="tipo" value="personalizado" {{ 'checked' if pers }}>
+          <span><strong>{{ _('Personalizado') }}</strong><br>{{ _('Un examen por alumno de la lista, con su nombre impreso y sin las preguntas que ya tiene superadas en clase (cuentan como acierto).') }}</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{ _('Preguntas y copias') }}</legend>
+      <label>{{ _('Preguntas del examen completo') if pers else _('Preguntas por examen') }} <input type="number" name="n_preguntas" min="1" max="30" value="{{ cfg.n_preguntas }}">
+        {% if pers %}<small>{{ _('La nota se calcula sobre este número; las superadas cuentan como acierto.') }}</small>{% endif %}</label>
+      {% if pers %}
+      <input type="hidden" name="copias" value="{{ cfg.copias }}">
+      <label>{{ _('Exámenes de reserva') }} <input type="number" name="reserva" min="0" max="200" value="{{ cfg.reserva }}">
+        <small>{{ _('Exámenes completos sin personalizar, con casillas para el documento, para quien no esté en la lista.') }}</small></label>
+      {% else %}
+      <input type="hidden" name="reserva" value="{{ cfg.reserva }}">
+      <label>{{ _('Copias a imprimir') }} <input type="number" name="copias" min="1" max="999" value="{{ cfg.copias }}">
+        <small>{{ _('Se reparten los modelos en orden (A, B, C, D, A…), así alumnos contiguos tienen modelos distintos.') }}</small></label>
+      {% endif %}
+      <label class="casilla"><input type="checkbox" name="desordenar_preguntas" value="1" {{ 'checked' if cfg.desordenar_preguntas }}> {{ _('Desordenar las preguntas en cada modelo') }}</label>
+      <label class="casilla"><input type="checkbox" name="desordenar_respuestas" value="1" {{ 'checked' if cfg.desordenar_respuestas }}> {{ _('Desordenar las opciones (las que empiezan por «Todas…» o «Ninguna…» no se mueven)') }}</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{ _('Puntuación') }}</legend>
+      <label>{{ _('Acierto suma') }} <input name="valor_bien" value="{{ cfg.valor_bien|dec(2) }}" inputmode="decimal"></label>
+      <label>{{ _('Fallo resta') }} <input name="valor_mal" value="{{ cfg.valor_mal|abs|dec(2) }}" inputmode="decimal"></label>
+      <label>{{ _('Nota sobre') }} <input name="nota_maxima" value="{{ cfg.nota_maxima|dec(1) }}" inputmode="decimal"></label>
+      <label>{{ _('Preguntas con varias correctas') }}
+        <select name="multiples">
+          <option value="parcial" {{ 'selected' if cfg.multiples=='parcial' }}>{{ _('Puntuación parcial') }}</option>
+          <option value="exacta" {{ 'selected' if cfg.multiples=='exacta' }}>{{ _('Solo cuenta si es exacta') }}</option>
+        </select>
+        <small>{{ _('Parcial: (aciertos − errores) / nº de correctas, sin bajar de 0; si no acierta ninguna, cuenta como fallo.') }}</small>
+      </label>
+      <label class="casilla"><input type="checkbox" name="permitir_negativa" value="1" {{ 'checked' if cfg.permitir_negativa }}> {{ _('Permitir nota final negativa') }}</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{ _('Tipografía') }}</legend>
+      <label>{{ _('Tamaño de las preguntas') }} <input name="tam_pregunta" value="{{ cfg.tam_pregunta|dec(1) }}" inputmode="decimal"></label>
+      <label>{{ _('Tamaño de las opciones') }} <input name="tam_respuesta" value="{{ cfg.tam_respuesta|dec(1) }}" inputmode="decimal"></label>
+    </fieldset>
+
+    <fieldset class="ancho">
+      <legend>{{ _('Modelos de examen') }}</legend>
+      <p class="nota-pie">{{ _('Cada modelo toma las preguntas cuyo «grupo» esté en la lista (separados por comas). Si no llegan al número de preguntas del examen, el resto se elige al azar entre las preguntas sin grupo del banco, distintas en cada modelo. Si hay más de las necesarias, se eligen al azar entre ellas. Un modelo sin grupos toma todas sus preguntas al azar de todo el banco.') }}</p>
+      <table class="tabla compacta modelos" id="tabla-modelos">
+        <thead><tr><th>{{ _('Nombre') }}</th><th>{{ _('Grupos') }}</th><th>{{ _('Preguntas') }}</th><th></th></tr></thead>
+        <tbody>
+        {% for m in cfg.modelos %}
+          {% set c = chk.modelos[loop.index0] if chk and chk.modelos|length > loop.index0 else None %}
+          <tr>
+            <td><input name="modelo_nombre" value="{{ m.nombre }}" size="4"></td>
+            <td><input name="modelo_grupos" value="{{ m.grupos }}" placeholder="{{ _('todas') }}"></td>
+            <td>{% if c %}<span class="chip {{ {'ok':'ok','azar':'','faltan':'mal'}[c.estado] }}">{{ c.texto }}</span>{% if c.alumnos is defined %} <small>· {{ _('{n} alumno(s)', n=c.alumnos) }}</small>{% endif %}{% endif %}</td>
+            <td><button type="button" class="enlace quitar" aria-label="{{ _('Quitar modelo') }}">{{ _('Quitar') }}</button></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <button type="button" class="boton pequeno" id="anadir-modelo">{{ _('Añadir modelo') }}</button>
+    </fieldset>
+
+    <div class="ancho acciones"><button class="boton principal">{{ _('Guardar configuración') }}</button></div>
+  </form>
+</section>
+
+<section id="generar" class="seccion">
+  <h1><span class="paso-num">3</span> {{ _('Generar e imprimir') }}</h1>
+  {% if chk and not chk.ok %}
+    <div class="aviso error">{{ _('No se puede generar todavía: algún modelo no tiene preguntas suficientes.') }} {% for a in chk.avisos %}{{ a }} {% endfor %}</div>
+  {% endif %}
+  <div class="dos-columnas">
+    <div class="panel">
+      {% if gen %}
+        {% if gen.tipo == 'personalizado' %}
+          {% set reservas = gen.modelos|selectattr('reserva')|list|length %}
+          <p class="dato">{{ _('Generado el {fecha} · código {codigo}', fecha=gen.fecha, codigo=gen.codigo) }} · {{ _('{n} exámenes personalizados', n=gen.modelos|length - reservas) }}{% if reservas %} + {{ _('{n} de reserva', n=reservas) }}{% endif %}</p>
+          <p class="nota-pie">{{ _('El PDF está ordenado alfabéticamente por alumno; los de reserva van al final.') }}</p>
+        {% else %}
+          <p class="dato">{{ _('Generado el {fecha} · código {codigo}', fecha=gen.fecha, codigo=gen.codigo) }} · {{ _('{m} modelos · {n} copias', m=gen.modelos|length, n=gen.copias) }}</p>
+        {% endif %}
+        <p class="botones">
+          <a class="boton principal" href="{{ url_for('descargar', pid=p.id, nombre='examenes.pdf') }}">{{ _('Descargar PDF para imprimir') }}</a>
+          <a class="boton" href="{{ url_for('descargar', pid=p.id, nombre='soluciones.pdf') }}">{{ _('Soluciones por modelo') }}</a>
+        </p>
+        <p class="nota-pie">{{ _('Imprima a doble cara. Cada copia empieza en una hoja nueva (se añade una página en blanco si hace falta). Solo hay que escanear la primera página de cada examen; el lector ignora las páginas en blanco o de preguntas.') }}</p>
+      {% else %}
+        <p>{{ _('Al generar se fija el orden de preguntas y opciones de cada modelo. Revise antes la configuración.') }}</p>
+      {% endif %}
+      <form method="post" action="{{ url_for('generar', pid=p.id) }}" class="generar-form">
+        {% if hay_lecturas %}
+          <label class="casilla peligro"><input type="checkbox" name="confirmar" value="1"> {{ _('Ya hay hojas escaneadas: entiendo que volver a generar invalida los exámenes ya impresos') }}</label>
+        {% endif %}
+        {% if gen and gen.tipo != cfg.tipo %}<p class="aviso error">{{ _('Ha cambiado el tipo de examen: vuelva a generar para aplicarlo.') }}</p>{% endif %}
+        {% if gen and gen.get('idioma', 'es') != cfg.idioma_examen and not hay_lecturas %}<p class="aviso error">{{ _('Ha cambiado el idioma del examen: vuelva a generar para aplicarlo.') }}</p>{% endif %}
+        <button class="boton {{ '' if gen else 'principal' }}" {{ 'disabled' if not chk or not chk.ok }}>{{ _('Volver a generar') if gen else _('Generar exámenes') }}</button>
+      </form>
+    </div>
+    {% if hay_pdf %}
+    <figure class="vista-previa">
+      <a href="{{ url_for('descargar', pid=p.id, nombre='examenes.pdf', ver=1) }}" target="_blank"><img src="{{ url_for('vista_previa', pid=p.id) }}?v={{ gen.codigo if gen }}{{ gen.get('idioma', '') if gen }}" alt="{{ _('Primera página del primer examen') }}"></a>
+      <figcaption>{{ _('Primera página de la copia 1 (pulse para abrir el PDF)') }}</figcaption>
+    </figure>
+    {% endif %}
+  </div>
+  <div class="siguiente-paso">
+    {% if gen %}
+      <div>
+        <h2>{{ _('¿Y ahora?') }}</h2>
+        <p>{{ _('Imprima los exámenes y hágalos con los alumnos.') }} <strong>{{ _('Cuando tenga las hojas escaneadas, continúe en el paso 4') }}</strong> {{ _('para subirlas y corregirlas. Puede cerrar Aspa mientras tanto: todo queda guardado y el examen aparecerá en la pantalla de inicio.') }}</p>
+      </div>
+      <div class="botones">
+        <a class="boton" href="{{ url_for('inicio') }}">{{ _('Volver al inicio') }}</a>
+        <a class="boton principal" href="{{ url_for('corregir', pid=p.id) }}">{{ _('Ir al paso 4: escanear y revisar') }}</a>
+      </div>
+    {% else %}
+      <p>{{ _('Cuando genere los exámenes podrá descargarlos para imprimir. Después de hacer y escanear el examen, se continúa en el paso 4.') }}</p>
+      <div class="botones"><a class="boton" href="{{ url_for('inicio') }}">{{ _('Volver al inicio') }}</a></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const T = {{ {'todas': _('todas'), 'quitar': _('Quitar')}|tojson }};
+const tabla = document.querySelector('#tabla-modelos tbody');
+document.getElementById('anadir-modelo').addEventListener('click', () => {
+  const n = tabla.rows.length;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input name="modelo_nombre" value="${String.fromCharCode(65 + n)}" size="4"></td>
+    <td><input name="modelo_grupos" placeholder="${T.todas}"></td><td></td>
+    <td><button type="button" class="enlace quitar">${T.quitar}</button></td>`;
+  tabla.appendChild(tr);
+});
+tabla.addEventListener('click', e => {
+  if (e.target.classList.contains('quitar') && tabla.rows.length > 1) e.target.closest('tr').remove();
+});
+</script>
+{% endblock %}
