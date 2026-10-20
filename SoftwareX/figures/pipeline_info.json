@@ -1,0 +1,18 @@
+{
+ "markers": 4,
+ "boxes_found": 200,
+ "max_shift_mm": 1.2576565508913742,
+ "median_shift_mm": 1.0700481948588174,
+ "answers_ok": "20/20",
+ "qr": {
+  "codigo": "D229F2",
+  "modelo": 2,
+  "copia": 3,
+  "alumno": ""
+ },
+ "id": true,
+ "photo_px": [
+  3531,
+  2600
+ ]
+}
