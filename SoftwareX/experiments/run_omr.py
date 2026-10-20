@@ -67,6 +67,7 @@ def summarise(rows, times=None):
         "box_fp": sum(r["box_fp"] for r in read),
         "box_fn": sum(r["box_fn"] for r in read),
         "flagged": sum(r["flagged"] for r in read),
+        "unread_reasons": sorted({r.get("error", "") for r in rows if not r["read"]}),
         "perfect_sheets": sum(1 for r in read if r["q_err"] == 0 and r["qr"] and r["id"] in (None, True)) / n if n else 0,
     }
     if times:

@@ -1,0 +1,617 @@
+{
+ "checks": [
+  {
+   "name": "UI switches to English",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Installed languages",
+   "ok": true,
+   "detail": "{'es': 'Español', 'en': 'English'}"
+  },
+  {
+   "name": "Template preguntas/limpia downloads and parses back",
+   "ok": true,
+   "detail": "14664"
+  },
+  {
+   "name": "Template preguntas/ejemplo downloads and parses back",
+   "ok": true,
+   "detail": "15541"
+  },
+  {
+   "name": "Template alumnos/limpia downloads and parses back",
+   "ok": true,
+   "detail": "12972"
+  },
+  {
+   "name": "Template alumnos/ejemplo downloads and parses back",
+   "ok": true,
+   "detail": "13118"
+  },
+  {
+   "name": "Template personalizado/limpia downloads and parses back",
+   "ok": true,
+   "detail": "21488"
+  },
+  {
+   "name": "Template personalizado/ejemplo downloads and parses back",
+   "ok": true,
+   "detail": "22510"
+  },
+  {
+   "name": "Help page preguntas",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Help page alumnos",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Help page personalizado",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Multiple correct answers parsed (AB)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Numeric key parsed (1 = A)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "'All/None of the above' detected as fixed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Explicit fixed column (ABC)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "True/false question with two options",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "CSV with legacy headers, numeric multi-key and duplicate id warning",
+   "ok": true,
+   "detail": "['Row 3: id 1 is duplicated; renamed to 1_3.']"
+  },
+  {
+   "name": "Academic year validation",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Student matching (exact, NIE, passport, wildcard, one-digit, not found, empty)",
+   "ok": true,
+   "detail": "{'12345678': ('exacto', 'A'), '1234567': ('exacto', 'B'), '010047': ('exacto', 'C'), '1234?678': ('comodin', 'A'), '12345679': ('aproximado', 'A'), '55555555': ('no_encontrado', None), '': ('vacio', None)}"
+  },
+  {
+   "name": "Partial-credit rule b*max(0,hits-errors)/|C|",
+   "ok": true,
+   "detail": "{'AB': (1.0, 'bien'), 'A': (0.5, 'parcial'), 'B': (0.5, 'parcial'), 'ABC': (0.5, 'parcial'), 'AC': (0.0, 'parcial'), 'C': (-0.25, 'mal'), 'CD': (-0.25, 'mal'), 'ABCD': (0.0, 'parcial'), '': (0.0, 'blanco')}"
+  },
+  {
+   "name": "Exact mode: anything but the exact key is a wrong answer",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Single-answer questions",
+   "ok": true,
+   "detail": "{'C': (1.0, 'bien'), 'A': (-0.25, 'mal'), 'AC': (-0.25, 'mal'), '': (0.0, 'blanco')}"
+  },
+  {
+   "name": "Exam created from the home page",
+   "ok": true,
+   "detail": "software-engineering-final-exam-junio-2025-2026"
+  },
+  {
+   "name": "Question bank uploaded (40 questions)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Class list uploaded (40 students)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Image attached with caption",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Settings saved (decimal comma accepted, penalty stored negative)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Question-availability check per version",
+   "ok": true,
+   "detail": "[('A', '10 from the version + 10 at random (from 20 without a group)', 'azar'), ('B', '10 from the version + 10 at random (from 20 without a group)', 'azar'), ('C', '20 from the version', 'ok'), ('D', '20 at random from 40', 'azar')]"
+  },
+  {
+   "name": "PDF with 40 copies generated (duplex-ready)",
+   "ok": true,
+   "detail": "160 pages in 3.3 s"
+  },
+  {
+   "name": "Printed exam in English",
+   "ok": true,
+   "detail": "Software Engineering · Final exam June 2025-2026 · Group 1 Version A Copy no. 00"
+  },
+  {
+   "name": "Answer keys PDF generated",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Version A contains all 10 testing questions + 10 ungrouped",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Version B contains all 10 requirements questions",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Version C = groups T and R",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Interleaved distribution A,B,C,D,A,...",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Fixed options stay in place after shuffling",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "True/false questions keep two boxes (gaps at the end)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Options shuffled",
+   "ok": true,
+   "detail": "73"
+  },
+  {
+   "name": "Preview image",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Unsupported files are skipped on upload",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "All pages read (30 images + 8-page PDF)",
+   "ok": true,
+   "detail": "38 pages in 11.4 s"
+  },
+  {
+   "name": "Blank page and question page ignored",
+   "ok": true,
+   "detail": "['batch.pdf#p7', 'batch.pdf#p8']"
+  },
+  {
+   "name": "Answers read as filled in (>= 99.5 %)",
+   "ok": true,
+   "detail": "0/720 wrong, 0 of them flagged as doubtful"
+  },
+  {
+   "name": "Students identified from the ID grid",
+   "ok": true,
+   "detail": "36"
+  },
+  {
+   "name": "Review screen and student mode render",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Click-to-correct changes the answer and the grade immediately",
+   "ok": true,
+   "detail": "4.25 -> 4.88"
+  },
+  {
+   "name": "Student reassigned manually",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Version overridden manually",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Sheet marked as reviewed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Re-reading all scans keeps manual corrections",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Duplicate student flagged on both sheets",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Statistics per bank question",
+   "ok": true,
+   "detail": "37"
+  },
+  {
+   "name": "Voiding a question recalculates every grade",
+   "ok": true,
+   "detail": "question 39: 9 grades changed"
+  },
+  {
+   "name": "Manual corrections survive voiding",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Corrected key mapped to each version's printed order",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Restoring the key restores the grades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Excel export with all sheets",
+   "ok": true,
+   "detail": "['Grades', 'Class list', 'Answers', 'Points by question', 'Statistics', 'Settings']"
+  },
+  {
+   "name": "Absent students marked in the class list",
+   "ok": true,
+   "detail": "4"
+  },
+  {
+   "name": "Regeneration blocked once scans exist (without confirmation)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "New exam copied from a previous one (bank, list and settings)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Printed exam in Spanish while the interface is in English",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "One exam per student plus 3 spare copies",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Passed questions removed from each personalised exam",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Student name printed on the personalised sheet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Personalised sheets identified by QR and passed questions counted as correct",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Deleted exams go to the recycle bin",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "English translation complete",
+   "ok": true,
+   "detail": "en: 532 textos, 532 traducidos, 0 sin traducir, 0 que ya no se usan."
+  }
+ ],
+ "data": {
+  "matching": {
+   "12345678": [
+    "exacto",
+    "A"
+   ],
+   "1234567": [
+    "exacto",
+    "B"
+   ],
+   "010047": [
+    "exacto",
+    "C"
+   ],
+   "1234?678": [
+    "comodin",
+    "A"
+   ],
+   "12345679": [
+    "aproximado",
+    "A"
+   ],
+   "55555555": [
+    "no_encontrado",
+    null
+   ],
+   "": [
+    "vacio",
+    null
+   ]
+  },
+  "scoring_partial": {
+   "AB": [
+    1.0,
+    "bien"
+   ],
+   "A": [
+    0.5,
+    "parcial"
+   ],
+   "B": [
+    0.5,
+    "parcial"
+   ],
+   "ABC": [
+    0.5,
+    "parcial"
+   ],
+   "AC": [
+    0.0,
+    "parcial"
+   ],
+   "C": [
+    -0.25,
+    "mal"
+   ],
+   "CD": [
+    -0.25,
+    "mal"
+   ],
+   "ABCD": [
+    0.0,
+    "parcial"
+   ],
+   "": [
+    0.0,
+    "blanco"
+   ]
+  },
+  "scoring_exact": {
+   "AB": [
+    1.0,
+    "bien"
+   ],
+   "A": [
+    -0.25,
+    "mal"
+   ],
+   "B": [
+    -0.25,
+    "mal"
+   ],
+   "ABC": [
+    -0.25,
+    "mal"
+   ],
+   "AC": [
+    -0.25,
+    "mal"
+   ],
+   "C": [
+    -0.25,
+    "mal"
+   ],
+   "CD": [
+    -0.25,
+    "mal"
+   ],
+   "ABCD": [
+    -0.25,
+    "mal"
+   ],
+   "": [
+    0.0,
+    "blanco"
+   ]
+  },
+  "plan": [
+   [
+    "A",
+    "10 from the version + 10 at random (from 20 without a group)",
+    "azar"
+   ],
+   [
+    "B",
+    "10 from the version + 10 at random (from 20 without a group)",
+    "azar"
+   ],
+   [
+    "C",
+    "20 from the version",
+    "ok"
+   ],
+   [
+    "D",
+    "20 at random from 40",
+    "azar"
+   ]
+  ],
+  "generation": {
+   "copies": 40,
+   "pages": 160,
+   "seconds": 3.3,
+   "code": "D229F2"
+  },
+  "reading": {
+   "pages": 38,
+   "seconds": 11.45,
+   "answers": 720,
+   "wrong": 0,
+   "wrong_flagged": 0
+  },
+  "sheet_states": {
+   "ok": 15,
+   "revisar": 21,
+   "error": 0
+  },
+  "incidences": [
+   "1 question(s) with «Cancel» to review",
+   "2 question(s) with «Cancel» to review",
+   "3 question(s) with «Cancel» to review",
+   "4 question(s) with «Cancel» to review"
+  ],
+  "stats_sample": [
+   {
+    "id": "39",
+    "n": 9,
+    "acierto": 22.2,
+    "elecciones": [
+     3,
+     3,
+     3,
+     4
+    ],
+    "bien": 2,
+    "parcial": 2,
+    "mal": 5,
+    "blanco": 0
+   },
+   {
+    "id": "4",
+    "n": 18,
+    "acierto": 38.9,
+    "elecciones": [
+     10,
+     2,
+     0,
+     5
+    ],
+    "bien": 7,
+    "parcial": 0,
+    "mal": 6,
+    "blanco": 3
+   },
+   {
+    "id": "8",
+    "n": 18,
+    "acierto": 38.9,
+    "elecciones": [
+     12,
+     3,
+     2,
+     3
+    ],
+    "bien": 7,
+    "parcial": 0,
+    "mal": 6,
+    "blanco": 4
+   },
+   {
+    "id": "38",
+    "n": 27,
+    "acierto": 40.7,
+    "elecciones": [
+     13,
+     6,
+     2,
+     6
+    ],
+    "bien": 11,
+    "parcial": 0,
+    "mal": 11,
+    "blanco": 2
+   },
+   {
+    "id": "7",
+    "n": 18,
+    "acierto": 44.4,
+    "elecciones": [
+     10,
+     2,
+     3,
+     1
+    ],
+    "bien": 8,
+    "parcial": 0,
+    "mal": 5,
+    "blanco": 4
+   }
+  ],
+  "excel_sheets": [
+   "Grades",
+   "Class list",
+   "Answers",
+   "Points by question",
+   "Statistics",
+   "Settings"
+  ],
+  "personalised_sizes": {
+   "min": 14,
+   "max": 20,
+   "spare": 3
+  },
+  "personalised_example": [
+   {
+    "student": "Brown, Sam",
+    "passed": 0,
+    "on_sheet": 20,
+    "grade": 6.38
+   },
+   {
+    "student": "Clarke, Pablo",
+    "passed": 4,
+    "on_sheet": 16,
+    "grade": 5.5
+   },
+   {
+    "student": "Costa, Pablo",
+    "passed": 6,
+    "on_sheet": 14,
+    "grade": 5.88
+   },
+   {
+    "student": "Davies, Eli",
+    "passed": 4,
+    "on_sheet": 16,
+    "grade": 3.12
+   },
+   {
+    "student": "Dubois, Robin",
+    "passed": 0,
+    "on_sheet": 20,
+    "grade": 6.5
+   }
+  ],
+  "translations": "en: 532 textos, 532 traducidos, 0 sin traducir, 0 que ya no se usan."
+ },
+ "summary": "67/67 checks passed"
+}

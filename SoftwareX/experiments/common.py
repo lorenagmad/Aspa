@@ -142,9 +142,10 @@ def perspective(img, strength, rng, border=235):
     """Random displacement of the four corners by up to `strength` x width."""
     h, w = img.shape
     d = strength * w
+    m = int(d) + 10  # margin so that the whole sheet stays inside the photo
     src = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
-    dst = src + np.float32([[rng.uniform(-d, d), rng.uniform(-d, d)] for _ in range(4)])
-    return cv2.warpPerspective(img, cv2.getPerspectiveTransform(src, dst), (w, h), borderValue=border)
+    dst = src + m + np.float32([[rng.uniform(-d, d), rng.uniform(-d, d)] for _ in range(4)])
+    return cv2.warpPerspective(img, cv2.getPerspectiveTransform(src, dst), (w + 2 * m, h + 2 * m), borderValue=border)
 
 
 def phone_photo(img, tilt, rng, out_w=3000):

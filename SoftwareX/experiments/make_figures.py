@@ -44,20 +44,18 @@ def render(pdf, page=0, dpi=200, clip_mm=None):
 def fig_sheets(home):
     vers = next(home.glob("software-engineering-final-exam*"))
     pers = next(home.glob("personalised-exam*"))
-    a = render(vers / "examenes.pdf", 0, 220)
+    a = render(vers / "examenes.pdf", 0, 220, clip_mm=(0, 0, 210, 141))
     with fitz.open(pers / "examenes.pdf") as d:
         page_b = next(i for i, pg in enumerate(d) if "passed" in pg.get_text() and "questions in class" in pg.get_text())
-    b = render(pers / "examenes.pdf", page_b, 220, clip_mm=(0, 0, 210, 118))
-    fig, ax = plt.subplots(1, 2, figsize=(7.2, 5.0), gridspec_kw={"width_ratios": [1, 1]})
+    b = render(pers / "examenes.pdf", page_b, 220, clip_mm=(0, 0, 210, 141))
+    fig, ax = plt.subplots(1, 2, figsize=(7.2, 2.75), gridspec_kw={"width_ratios": [1, 1]})
     ax[0].imshow(a)
     ax[1].imshow(b)
-    ax[1].set_anchor("N")
-    ax[0].set_anchor("N")
     for x in ax:
         x.set_xticks([]), x.set_yticks([])
         for s in x.spines.values():
             s.set_visible(True), s.set_color("#bbbbbb")
-    ax[0].set_title("(a) Version A, first page (answer sheet + questions)", fontsize=8)
+    ax[0].set_title("(a) Answer sheet of a copy of version A", fontsize=8)
     ax[1].set_title("(b) Personalised exam: name printed, no ID grid", fontsize=8)
     K = 220 / 25.4
     notes = [((L.LEFT - 4.5) * K, (L.TOP + 4.5) * K, "1", "ArUco marker"),
@@ -71,7 +69,7 @@ def fig_sheets(home):
                        bbox=dict(boxstyle="circle,pad=0.25", fc=RED, ec="none"))
     ax[0].text(0.0, -0.035, "  ".join(f"{n} {t}" for _, _, n, t in notes), transform=ax[0].transAxes, fontsize=6.2,
                va="top")
-    fig.tight_layout()
+    fig.subplots_adjust(left=0.01, right=0.99, wspace=0.04, top=0.92, bottom=0.08)
     fig.savefig(OUT / "fig_sheets.pdf", dpi=300, bbox_inches="tight")
     fig.savefig(OUT / "fig_sheets.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -215,6 +213,6 @@ if __name__ == "__main__":
         fig_robustness(json.loads(res_json.read_text()))
     if shots.exists():
         # review screen without the footer (it shows a local path)
-        crop(shots / "ui_review.png", OUT / "fig_review.jpg", (330, 140, 2880, 2380), 0.8)
-        crop(shots / "ui_statistics.png", OUT / "fig_statistics.jpg", (440, 0, 2880, 1640), 0.8)
+        crop(shots / "ui_review.png", OUT / "fig_review.jpg", (372, 140, 2880, 2380), 0.8)
+        crop(shots / "ui_statistics.png", OUT / "fig_statistics.jpg", (440, 100, 2880, 1480), 0.8)
         crop(shots / "ui_prepare.png", OUT / "fig_versions.jpg", (440, 4300, 2880, 5100), 0.8)
