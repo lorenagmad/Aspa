@@ -212,14 +212,10 @@ The web layer (Figure~\ref{fig:architecture}) contains no exam logic, which is i
 
 \paragraph{Settings} All settings are chosen in a single form (Figure~\ref{fig:settings}): subject, title, session and language of the printed exam, instructions for students, exam type (by versions or personalised), number of questions and copies, shuffling, scoring and versions. Each version lists the question groups it draws from and is completed at random with ungrouped questions; before generation, Aspa reports the source of the questions of each version or the shortfall. Questions and options are shuffled with a recorded seed, and copies are interleaved (A, B, C\dots) and padded for duplex printing. A second PDF contains the keys and the mapping to bank identifiers. In personalised mode, each student is assigned to a version whose pool contains all their passed questions, balancing the load across versions; the exam includes that pool minus the passed questions, which count as correct, and prints the student's name. Non-personalised spare copies are also produced.
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
-\begin{minipage}[t]{0.49\textwidth}\centering
-\includegraphics[width=\textwidth]{figures/fig_configurationI.PNG}\\[2pt]{\small (a)}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.49\textwidth}\centering
-\includegraphics[width=\textwidth]{figures/fig_configurationII.PNG}\\[2pt]{\small (b)}
-\end{minipage}
+\includegraphics[width=0.7\textwidth]{figures/fig_configurationI.PNG}\\[2pt]{\small (a)}\\[6pt]
+\includegraphics[width=0.7\textwidth]{figures/fig_configurationII.PNG}\\[2pt]{\small (b)}
 \caption{Configuration of an exam: (a)~question bank, class list, images and exam details, including the language of the printed exam; (b)~exam type, questions and copies, scoring (including partial credit for multiple-answer questions) and versions.}
 \label{fig:settings}
 \end{figure}
