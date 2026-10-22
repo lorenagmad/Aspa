@@ -120,11 +120,35 @@ C8 & Support email for questions & \href{mailto:lorena.gutierrez@uca.es}{lorena.
 
 Multiple-choice questions (MCQs) sample a broad syllabus in little time and are graded objectively, which explains their widespread use in higher education~\cite{haladyna2002}. When exams are sat on paper, manual grading of large groups is slow and error-prone, and item analysis, which detects flawed questions and wrong keys~\cite{ebel1991}, is seldom performed. Practices that improve fairness, such as distributing several versions of the exam or applying negative marking to discourage guessing~\cite{burton2005}, further increase the grading workload.
 
-Continuous assessment adds a further requirement. Frequent low-stakes quizzes improve retention~\cite{roediger2006} and provide formative feedback~\cite{black1998,hattie2007}. A consistent policy, in line with mastery learning~\cite{bloom1968}, is to exempt each student from the final-exam questions whose content they have already demonstrated. On paper, this requires a different exam and answer key per student, which is impractical without software support.
+Continuous assessment adds a further requirement. Frequent low-stakes quizzes improve retention~\cite{roediger2006} and provide formative feedback~\cite{black1998,hattie2007}. Teachers may therefore wish to credit in the final exam what each student has demonstrated during the course, either by exempting them from content they have already mastered, in line with mastery learning~\cite{bloom1968}, or by rewarding participation and performance in class quizzes. In a teaching-innovation project at the University of Cádiz, the ranking of each student in the gamified quizzes held after every lecture determines how many questions of each topic are removed from their final exam and counted as correct~\cite{gutierrez2018}; at another institution, individualised final exams omit the problems each student has already solved~\cite{omalley2025}. On paper, both policies require a different exam and answer key per student. Done by hand, this multiplies the work of setting and marking the exam, and in practice it is seldom done.
 
-Existing tools solve this problem only partially. Commercial optical mark recognition (OMR) products, such as Remark OMR or ZipGrade~\cite{zipgrade}, are proprietary, and cloud services transfer personal data to third parties, which raises compliance issues under the GDPR~\cite{gdpr}. Among open-source tools, Auto Multiple Choice~\cite{amc} requires exams to be written in \LaTeX{} and runs only on Linux and macOS; R/exams~\cite{zeileis2014} requires R programming; FormScanner~\cite{formscanner} and OMRChecker~\cite{omrchecker} read generic bubble sheets but neither generate nor grade versioned exams. To our knowledge, none supports exams personalised from the record of questions each student has passed.
+Existing tools solve this problem only partially (Table~\ref{tab:comparison}). Commercial optical mark recognition (OMR) products such as Remark Office OMR~\cite{remark} do not generate exams, and services such as ZipGrade~\cite{zipgrade} and Gradescope~\cite{gradescope} store students' data and scans on the provider's servers (in ZipGrade, by default), which raises compliance issues under the GDPR~\cite{gdpr}. Among open-source tools, Auto Multiple Choice~\cite{amc} requires exams to be written in \LaTeX{} and runs natively only on Linux and macOS; R/exams~\cite{zeileis2014} requires R programming; Eyegrade~\cite{fisteus2013} generates exams from \LaTeX{} templates and reads them with a live webcam; FormScanner~\cite{formscanner} and OMRChecker~\cite{omrchecker} read and score answer sheets but do not generate exams. Alonso-Fernandez and Bigun~\cite{alonso2022} automate weekly paper quizzes whose results can exempt students from the final exam or part of it, but their software has not been released. To our knowledge, none of these tools provides, as a built-in feature that requires no code, exams personalised from the list of questions each student has passed.
 
-Aspa was developed at the University of Cádiz under three requirements: (i)~usable without programming, from the spreadsheets teachers already handle (question bank and class list); (ii)~able to read sheets digitised by any means, from a sheet-fed scanner to a phone camera; and (iii)~fully local. The workflow consists of six steps: upload the bank and the class list; configure exam type, language, scoring and versions; generate the printable PDF; upload the scans, which are read and graded automatically, and review the flagged sheets; inspect item statistics and void questions or correct keys; and export the grades.
+\begin{table}[!htb]
+\centering
+\caption{Comparison with related tools, according to their documentation (October 2026). Pers.: exams personalised from each student's passed questions, which count as correct; No code: the whole cycle works without programming or \LaTeX{}; Images: images in the exam; Scan/phone: documented reading of scanner images and phone photographs; Review: editable view of the detected marks on the scan; Recalc.: changing keys, voided questions or scoring regrades without rescanning; Local: data processed on the teacher's computer; Gen.: generates the exam. \checkmark{} yes; $\circ$ partial; $\times$ no; ? not documented; -- not applicable.}
+\label{tab:comparison}\vspace{3pt}
+\small\setlength{\tabcolsep}{3.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccc}
+\toprule
+Tool & Pers. & No code & Images & Scan/phone & Review & Recalc. & Local & Gen. \\
+\midrule
+Aspa & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+Auto Multiple Choice~\cite{amc} & $\times$ & $\circ$ & \checkmark & ? & \checkmark & \checkmark & \checkmark & \checkmark \\
+R/exams~\cite{zeileis2014} & $\times$ & $\times$ & \checkmark & ? & $\circ$ & $\circ$ & \checkmark & \checkmark \\
+Eyegrade~\cite{fisteus2013} & $\times$ & $\circ$ & \checkmark & $\circ$\textsuperscript{a} & \checkmark & ? & \checkmark & \checkmark \\
+FormScanner~\cite{formscanner} & $\times$ & $\circ$ & -- & ? & \checkmark & ? & \checkmark & $\times$ \\
+OMRChecker~\cite{omrchecker} & $\times$ & $\times$ & -- & \checkmark & $\times$ & $\circ$ & \checkmark & $\times$ \\
+ZipGrade~\cite{zipgrade} & $\times$ & \checkmark & -- & \checkmark & \checkmark & ? & $\times$\textsuperscript{b} & $\circ$\textsuperscript{c} \\
+Remark Office OMR~\cite{remark} & $\times$ & \checkmark & -- & ? & \checkmark & \checkmark & \checkmark & $\times$ \\
+\bottomrule
+\end{tabular}}
+
+\vspace{2pt}{\footnotesize \textsuperscript{a}~Live webcam only. \textsuperscript{b}~Synchronised with the provider's servers by default. \textsuperscript{c}~Answer sheets only.}
+\end{table}
+
+Aspa was developed at the University of Cádiz to replace an in-house tool based on Excel macros, used by the first author since 2019 in at least three subjects with more than 1,300 students. Configuring that tool meant editing specific cells, running macros and deleting parts of the workbook by hand, and mistakes in this process led to grading errors. Personalised exams required a separate version of the workbook, multiple-answer questions were limited to two correct answers, and in most sittings some sheets had to be corrected by hand because students wrote their identity number outside the reading area. These problems led to three requirements for Aspa: (i)~usable without programming, from the spreadsheets teachers already handle (question bank and class list); (ii)~able to read sheets digitised by any means, from a sheet-fed scanner to a phone camera; and (iii)~fully local. The workflow consists of six steps: upload the bank and the class list; configure exam type, language, scoring and versions; generate the printable PDF; upload the scans, which are read and graded automatically, and review the flagged sheets; inspect item statistics and void questions or correct keys; and export the grades.
 
 %% ============================================================================
 \section{Software description}
@@ -135,7 +159,7 @@ Aspa~1.0.0 is a Python application served by Flask on \file{127.0.0.1} and used 
 \subsection{Software architecture}
 \label{sec:architecture}
 
-The web layer (Figure~\ref{fig:architecture}) contains no exam logic, which is implemented in the \file{examtool} package. Two design decisions are central. First, the module \file{layout} is the single definition of the answer-sheet geometry, shared by the PDF generator (ReportLab), the reader (OpenCV~\cite{opencv}) and a scan simulator, so generator and reader cannot diverge. Second, each exam is a folder of plain files: settings, bank, class list, the versions frozen at generation time (seed, question and option order, keys), the readings of each page and the teacher's manual corrections. Grades are never stored; they are recomputed from these files. Hence, changing the scoring, voiding a question or correcting a key updates all grades immediately, and re-reading the scans never overwrites manual corrections.
+The web layer (Figure~\ref{fig:architecture}) contains no exam logic, which is implemented in the \file{examtool} package. Two design decisions are central. First, the module \file{layout} is the single definition of the answer-sheet geometry, shared by the PDF generator (ReportLab), the reader (OpenCV~\cite{opencv}) and a scan simulator, so generator and reader cannot diverge. Second, each exam is a folder of plain files: settings, bank, class list, the versions frozen at generation time (seed, question and option order, keys), the readings of each page and the teacher's manual corrections. Grades are never stored; they are recomputed from these files, which removes the grading errors that a misconfigured workbook caused in the predecessor. Hence, changing the scoring, voiding a question or correcting a key updates all grades immediately, and re-reading the scans never overwrites manual corrections.
 
 \begin{figure}[!htb]
 \centering
@@ -184,11 +208,23 @@ The web layer (Figure~\ref{fig:architecture}) contains no exam logic, which is i
 \subsection{Software functionalities}
 \label{sec:functionalities}
 
-\paragraph{Question bank and class list} The bank is an Excel or CSV file with one row per question: identifier, topic, stem, up to four options, key (letters, or digits for legacy banks), group, fixed options and an optional explanation. Headers are matched by Spanish and English synonyms. Multiple-answer, true/false and fixed-order questions are supported; options such as ``All/None of the above'' are fixed automatically, and inconsistencies (duplicate identifiers, empty keys) are reported. The class list accepts the export of the university system or a simple sheet with each student's passed questions. Templates and help pages are built in.
+\paragraph{Question bank and class list} The bank is an Excel or CSV file with one row per question: identifier, topic, stem, two to four options, key (letters, or digits for legacy banks), group, fixed options and an optional explanation. Headers are matched by Spanish and English synonyms. Multiple-answer, true/false and fixed-order questions are supported; options such as ``All/None of the above'' are fixed automatically, and inconsistencies (duplicate identifiers, empty keys) are reported. The class list accepts the export of the university system or a simple sheet with each student's passed questions. Templates and help pages are built in. Images, such as figures or diagrams, are uploaded separately and printed at the end of each exam with their captions, by which questions refer to them.
 
-\paragraph{Versions and personalised exams} Each version lists the question groups it draws from and is completed at random with ungrouped questions; before generation, Aspa reports the source of the questions of each version or the shortfall. Questions and options are shuffled with a recorded seed, and copies are interleaved (A, B, C\dots) and padded for duplex printing. A second PDF contains the keys and the mapping to bank identifiers. In personalised mode, each student is assigned to a version whose pool contains all their passed questions, balancing the load across versions; the exam includes that pool minus the passed questions, which count as correct, and prints the student's name. Non-personalised spare copies are also produced.
+\paragraph{Settings} All settings are chosen in a single form (Figure~\ref{fig:settings}): subject, title, session and language of the printed exam, instructions for students, exam type (by versions or personalised), number of questions and copies, shuffling, scoring and versions. Each version lists the question groups it draws from and is completed at random with ungrouped questions; before generation, Aspa reports the source of the questions of each version or the shortfall. Questions and options are shuffled with a recorded seed, and copies are interleaved (A, B, C\dots) and padded for duplex printing. A second PDF contains the keys and the mapping to bank identifiers. In personalised mode, each student is assigned to a version whose pool contains all their passed questions, balancing the load across versions; the exam includes that pool minus the passed questions, which count as correct, and prints the student's name. Non-personalised spare copies are also produced.
 
-\paragraph{Answer sheet} Four ArUco markers~\cite{garrido2014} delimit the reading area; a QR code encodes exam, version, copy and, if personalised, the student's document; a ten-column digit grid records the identity document (national ID, residence card or passport digits); up to 30 questions are answered in boxes A--D, with a separate \emph{Cancel} box per question and a clarification box (Figure~\ref{fig:sheets}). Instructions are printed in the exam language, independent of the interface language.
+\begin{figure}[!htb]
+\centering
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/fig_configurationI.PNG}\\[2pt]{\small (a)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/fig_configurationII.PNG}\\[2pt]{\small (b)}
+\end{minipage}
+\caption{Configuration of an exam: (a)~question bank, class list, images and exam details, including the language of the printed exam; (b)~exam type, questions and copies, scoring (including partial credit for multiple-answer questions) and versions.}
+\label{fig:settings}
+\end{figure}
+
+\paragraph{Answer sheet} Four ArUco markers~\cite{garrido2014} delimit the reading area; a QR code encodes exam, version, copy and, if personalised, the student's document; a ten-column digit grid records the identity document (national ID, residence card or passport digits); up to 30 questions are answered in boxes A--D, with a separate \emph{Cancel} box per question and a clarification box (Figure~\ref{fig:sheets}). The markers and the QR code solve the reading problems of the predecessor's sheet, in which numbers written in the border prevented the page from being read, and the grid, matched with the class list, leaves no doubt about where the identity number goes. Instructions are printed in the exam language, independent of the interface language.
 
 \begin{figure}[!htb]
 \centering
@@ -233,7 +269,7 @@ Exact & 1 & $-0.25$ & $-0.25$ & $-0.25$ & $-0.25$ & $-0.25$ & $-0.25$ & $-0.25$ 
 
 The examples use a 40-question bank on software engineering (groups T and R and 20 ungrouped questions) and 40 fictitious students. Data and scripts are available in \file{SoftwareX/experiments} for reproducibility.
 
-\paragraph{Complete exam} Four versions of 20 questions were defined: A (group T), B (group R), C (T and R) and D (whole bank). Generating 40 copies (160 duplex pages) and the keys took 3.3~s. Thirty-six copies were filled in and degraded by the simulator and uploaded as 30 JPEG images and one PDF that also contained a blank page and a question page. The 38 pages were read in 11.5~s \todo{processor model}: the two extra pages were ignored, the 720 answers were read without error and all students were identified. The 21 sheets flagged for review all contained \emph{Cancel} marks introduced by the simulator. Voiding the question with the lowest success rate changed 18 grades without losing manual corrections, and corrected keys were mapped correctly onto each version. In personalised mode, Aspa produced 40 exams of 14 to 20 questions and three spare copies, identified every sheet by its QR code and counted the passed questions as correct. These steps belong to an end-to-end test suite of 67 checks run through the web interface, all of which passed.
+\paragraph{Complete exam} Four versions of 20 questions were defined: A (group T), B (group R), C (T and R) and D (whole bank). Generating 40 copies (160 duplex pages) and the keys took 3.3~s. Thirty-six copies were filled in and degraded by the simulator and uploaded as 30 JPEG images and one PDF that also contained a blank page and a question page. The 38 pages were read in 11.5~s on a desktop computer with an Intel Core i5-7600K processor (3.80~GHz): the two extra pages were ignored, the 720 answers were read without error and all students were identified. The 21 sheets flagged for review all contained \emph{Cancel} marks introduced by the simulator. Voiding the question with the lowest success rate changed 18 grades without losing manual corrections, and corrected keys were mapped correctly onto each version. In personalised mode, Aspa produced 40 exams of 14 to 20 questions and three spare copies, identified every sheet by its QR code and counted the passed questions as correct. These steps belong to an end-to-end test suite of 67 checks run through the web interface, all of which passed.
 
 \paragraph{Reading accuracy} Sheets were filled with known answers (crosses, filled boxes and ticks; blank, single and double answers; 5\% \emph{Cancel} marks) and read with the same function Aspa applies to real scans. First, 500 versioned and 125 personalised sheets were degraded with a random mixture of rotation (one in ten upside down), perspective, warping of up to 2~mm, shadow, grey paper, noise, blur, JPEG compression and ink from black pen to light pencil. Second, each defect was varied separately on 30 sheets per level. Table~\ref{tab:accuracy} summarises the results. In the mixed experiment, the only misread answer out of 12,066 was flagged as doubtful, and the unread sheets had part of the page outside the image, a condition that Aspa reports to the teacher. Reading took 0.21~s per page. The reader is unaffected by rotation, perspective, compression, noise and shadows; it fails beyond 2~mm of warping, strong blur (out-of-focus photographs) and resolutions under 60~dpi, and does not detect ink lighter than 66\% of the paper brightness, in which case the sheet is flagged because no document is found.
 
@@ -273,18 +309,19 @@ Ink grey level (255 = white) & \multicolumn{2}{l}{160 (undetected from 175)} \\
 
 \paragraph{Research} Personalised exams make it feasible to apply, at scale and on paper, policies that exempt students from content already mastered~\cite{bloom1968}, and to study their effect on quiz participation, grade distributions and the validity of the final exam. The exported per-option responses and the frozen versions support research on item quality and distractor analysis~\cite{ebel1991}, order effects between versions and negative marking~\cite{burton2005}, since alternative scoring rules can be applied to the same readings.
 
-\paragraph{Use} \todo{Courses of the University of Cádiz in which Aspa has been used, number of exams and students graded, academic years, other adopters, download statistics and related publications or teaching-innovation projects.} Aspa is distributed under the AGPL licence; it is not used commercially.
+\paragraph{Use} Aspa automates a continuous-assessment method that the first author has applied since the 2017/18 academic year within a teaching-innovation project~\cite{gutierrez2018}: first preparing the personalised exams by hand and, from 2019, with the predecessor described in Section~\ref{sec:motivation}, in at least three subjects and with more than 1,300 students. \todo{February 2027 trial: subjects, degrees, teachers and students; settings used in each subject; preparation time; sheets flagged by reason and corrected by hand.} Aspa will be presented in the teaching-innovation call of the University of Cádiz. It is distributed under the AGPL licence; it is not used commercially.
 
 %% ============================================================================
 \section{Conclusions}
 \label{sec:conclusions}
 
-Aspa covers the complete cycle of paper-based multiple-choice exams: versioned and personalised generation, optical reading of scans and phone photographs, grading with negative marking and partial credit, student review, item statistics with reversible adjustments and export. A shared sheet geometry and grades recomputed from plain files keep settings adjustable after the exam without losing corrections. Experiments show accurate reading under realistic defects, with residual errors flagged for review. Future work includes validation on large sets of real scans, support for more options and questions per sheet, and export to learning management systems such as Moodle.
+Aspa covers the complete cycle of paper-based multiple-choice exams: versioned and personalised generation, optical reading of scans and phone photographs, grading with negative marking and partial credit, student review, item statistics with reversible adjustments and export. A shared sheet geometry and grades recomputed from plain files keep settings adjustable after the exam without losing corrections. Experiments show accurate reading under realistic defects, with residual errors flagged for review. The answer sheet holds up to 30 questions with two to four options each, which covers the multiple-choice exams of the subjects for which Aspa was developed. Future work includes more questions per sheet and more options per question, validation on large sets of real scans and adoption at other universities.
+% Decide after the February trial whether "validation on large sets of real scans" stays.
 
 \section*{Acknowledgements}
 \label{sec:acknowledgements}
 
-\todo{Optional: colleagues and students who tested Aspa, and funding (e.g.\ teaching-innovation projects of the University of Cádiz).}
+We thank José Carlos Collado Machuca, who created the Excel-based tool that preceded Aspa. \todo{Optional: colleagues and students who tested Aspa, and funding (e.g.\ teaching-innovation projects of the University of Cádiz).}
 
 %% References
 \begin{thebibliography}{00}
@@ -304,7 +341,15 @@ Aspa covers the complete cycle of paper-based multiple-choice exams: versioned a
 
 \bibitem{bloom1968} B.~S. Bloom, Learning for mastery, Evaluation Comment 1~(2) (1968) 1--12.
 
-\bibitem{zipgrade} ZipGrade, \url{https://www.zipgrade.com} (accessed 20 October 2026).
+\bibitem{gutierrez2018} L.~Gutiérrez-Madroñal, J.~C. Collado Machuca, Cómo potenciar y evaluar de forma continua, la asistencia, los conocimientos y la participación activa del alumno en el aula a través de la gamificación [Fostering and continuously assessing students' attendance, knowledge and active participation in class through gamification], in: III Jornadas de Innovación Docente Universitaria UCA. Libro de Actas, Universidad de Cádiz, 2018, pp. 54--59. ISBN 978-84-09-04190-9 (in Spanish).
+
+\bibitem{omalley2025} P.~O'Malley, Individualized optional retake method for final exams, in: 2025 ASEE Midwest Section Conference Proceedings, ASEE, 2025. \url{https://doi.org/10.18260/1-2-1153-57848}
+
+\bibitem{remark} Gravic, Remark Office OMR, \url{https://remarksoftware.com} (accessed 22 October 2026).
+
+\bibitem{zipgrade} ZipGrade, \url{https://www.zipgrade.com} (accessed 22 October 2026).
+
+\bibitem{gradescope} Turnitin, Gradescope, \url{https://www.gradescope.com} (accessed 22 October 2026).
 
 \bibitem{gdpr} Regulation (EU) 2016/679 (General Data Protection Regulation), Official Journal of the European Union L 119 (2016) 1--88.
 
@@ -312,9 +357,13 @@ Aspa covers the complete cycle of paper-based multiple-choice exams: versioned a
 
 \bibitem{zeileis2014} A.~Zeileis, N.~Umlauf, F.~Leisch, Flexible generation of e-learning exams in R: Moodle quizzes, OLAT assessments, and beyond, Journal of Statistical Software 58~(1) (2014) 1--36. \url{https://doi.org/10.18637/jss.v058.i01}
 
+\bibitem{fisteus2013} J.~Arias Fisteus, A.~Pardo, N.~Fernández García, Grading multiple choice exams with low-cost and portable computer-vision techniques, Journal of Science Education and Technology 22~(4) (2013) 560--571. \url{https://doi.org/10.1007/s10956-012-9414-8}
+
 \bibitem{formscanner} FormScanner, \url{https://sourceforge.net/projects/formscanner/} (accessed 20 October 2026).
 
 \bibitem{omrchecker} U.~Singh, OMRChecker, \url{https://github.com/Udayraj123/OMRChecker} (accessed 20 October 2026).
+
+\bibitem{alonso2022} F.~Alonso-Fernandez, J.~Bigun, Continuous examination by automatic quiz assessment using spiral codes and image processing, in: Proc.\ 13th IEEE Global Engineering Education Conference (EDUCON), Tunis, 2022. \url{https://arxiv.org/abs/2201.11228}
 
 \bibitem{opencv} G.~Bradski, The OpenCV library, Dr.\ Dobb's Journal of Software Tools 25~(11) (2000) 120--125.
 
