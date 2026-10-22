@@ -67,7 +67,7 @@
 \author[uca]{José Miguel Mota-Macías}
 \cortext[cor1]{Corresponding author.}
 
-\address[uca]{Department of Computer Science and Engineering, School of Engineering, University of Cádiz, Avda.\ de la Universidad de Cádiz 10, 11519 Puerto Real, Cádiz, Spain \todo{check department and address}}
+\address[uca]{Department of Computer Science and Engineering, School of Engineering, University of Cádiz, Avda.\ de la Universidad de Cádiz 10, 11519 Puerto Real, Cádiz, Spain}
 
 \begin{abstract}
 Grading paper-based multiple-choice exams requires either proprietary optical readers or tools that demand \LaTeX{} or programming skills. Aspa is a local web application that covers the complete cycle: it generates exam versions from a spreadsheet question bank, prints answer sheets with fiducial markers and a QR code, reads scans and mobile-phone photographs with computer vision, grades with negative marking and partial credit, and supports the review of each sheet with the student. It also generates personalised exams that omit the questions each student has already passed during the course. All processing is local, so students' data never leave the teacher's computer.
@@ -93,7 +93,7 @@ Multiple-choice exams \sep Optical mark recognition \sep Automated grading \sep 
 \hline
 \textbf{Nr.} & \textbf{Code metadata description} & \textbf{Please fill in this column} \\
 \hline
-C1 & Current code version & v1.0.0 \\
+C1 & Current code version & v1.0.0 (\url{https://doi.org/10.5281/zenodo.23571011}) \\
 \hline
 C2 & Permanent GitHub link to code/repository used for this code version & \url{https://github.com/lorenagmad/Aspa} \\
 \hline
@@ -154,7 +154,7 @@ Aspa was developed at the University of Cádiz to replace an in-house tool based
 \section{Software description}
 \label{sec:description}
 
-Aspa~1.0.0 is a Python application served by Flask on \file{127.0.0.1} and used through the browser. Launch scripts for Windows, macOS and Linux create a virtual environment and install the dependencies; a PyInstaller script builds a standalone executable. The interface is available in Spanish and English, and languages are added as JSON files.
+Aspa~1.0.0~\cite{aspa} is a Python application served by Flask on \file{127.0.0.1} and used through the browser. Launch scripts for Windows, macOS and Linux create a virtual environment and install the dependencies; a PyInstaller script builds a standalone executable. The interface is available in Spanish and English, and languages are added as JSON files.
 
 \subsection{Software architecture}
 \label{sec:architecture}
@@ -365,6 +365,8 @@ We thank José Carlos Collado Machuca, who created the Excel-based tool that pre
 
 \bibitem{alonso2022} F.~Alonso-Fernandez, J.~Bigun, Continuous examination by automatic quiz assessment using spiral codes and image processing, in: Proc.\ 13th IEEE Global Engineering Education Conference (EDUCON), Tunis, 2022. \url{https://arxiv.org/abs/2201.11228}
 
+\bibitem{aspa} L.~Gutiérrez-Madroñal, R.~Baena-Pérez, J.~M. Mota-Macías, Aspa v1.0.0, Zenodo, 2026. \url{https://doi.org/10.5281/zenodo.23571011}
+
 \bibitem{opencv} G.~Bradski, The OpenCV library, Dr.\ Dobb's Journal of Software Tools 25~(11) (2000) 120--125.
 
 \bibitem{garrido2014} S.~Garrido-Jurado, R.~Muñoz-Salinas, F.~J. Madrid-Cuevas, M.~J. Marín-Jiménez, Automatic generation and detection of highly reliable fiducial markers under occlusion, Pattern Recognition 47~(6) (2014) 2280--2292. \url{https://doi.org/10.1016/j.patcog.2014.01.005}
@@ -374,7 +376,7 @@ We thank José Carlos Collado Machuca, who created the Excel-based tool that pre
 \section*{Current executable software version}
 \label{sec:execversion}
 
-Aspa is run from source with the launch scripts of the repository; a standalone executable can be built with \file{herramientas/crear_ejecutable.py} \todo{add the link to the release with executables, if published}.
+Aspa is run from source with the launch scripts of the repository (\url{https://github.com/lorenagmad/Aspa}); a standalone executable can be built with \file{herramientas/crear_ejecutable.py}.
 
 \end{document}
 \endinput
