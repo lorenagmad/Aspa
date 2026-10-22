@@ -1,26 +1,24 @@
-# Cómo citar Aspa. GitHub muestra este fichero como «Cite this repository».
-# PENDIENTE: ORCID de cada autor, afiliación, URL del repositorio y DOI de Zenodo.
 cff-version: 1.2.0
 message: "If you use Aspa, please cite it as below."
-title: "Aspa: multiple-choice exams: generate, grade and review"
+title: "Aspa"
 type: software
 version: 1.0.0
 date-released: "2026-10-15"
 license: AGPL-3.0-or-later
-repository-code: "https://github.com/USUARIO/aspa"
+repository-code: "https://github.com/lorenagmad/Aspa"
 authors:
   - family-names: "Gutiérrez Madroñal"
     given-names: "Lorena"
-    affiliation: "Universidad"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "University of Cádiz"
+    orcid: "https://orcid.org/0000-0002-2214-617X"
   - family-names: "Baena Pérez"
     given-names: "Rubén"
-    affiliation: "Universidad"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "University of Cádiz"
+    orcid: "https://orcid.org/0000-0001-7630-6223"
   - family-names: "Mota Macías"
     given-names: "José Miguel"
-    affiliation: "Universidad"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "University of Cádiz"
+    orcid: "https://orcid.org/0000-0002-4980-0549"
 keywords:
   - multiple-choice exams
   - optical mark recognition
