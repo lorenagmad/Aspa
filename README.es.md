@@ -1,5 +1,7 @@
 # Aspa · exámenes tipo test
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571010.svg)](https://doi.org/10.5281/zenodo.23571010)
+
 *[English version](README.md)*
 
 Aplicación local (se abre en el navegador) para preparar, imprimir, leer y corregir

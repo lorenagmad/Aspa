@@ -1,5 +1,7 @@
 # Aspa · multiple-choice exams
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571010.svg)](https://doi.org/10.5281/zenodo.23571010)
+
 *[Versión en español](README.es.md)*
 
 **Aspa** is a local web application to **generate, print, read and grade multiple-choice

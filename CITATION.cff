@@ -1,25 +1,34 @@
 # Cómo citar Aspa. GitHub muestra este fichero como «Cite this repository».
-# PENDIENTE: ORCID de cada autor, afiliación, URL del repositorio y DOI de Zenodo.
+# PENDIENTE: ORCID de cada autor.
 cff-version: 1.2.0
 message: "If you use Aspa, please cite it as below."
-title: "Aspa: multiple-choice exams: generate, grade and review"
+title: "Aspa: an offline tool to generate, read and grade versioned and personalised multiple-choice exams"
 type: software
 version: 1.0.0
-date-released: "2026-10-15"
+doi: 10.5281/zenodo.23571011
+date-released: "2026-10-22"
 license: AGPL-3.0-or-later
-repository-code: "https://github.com/USUARIO/aspa"
+repository-code: "https://github.com/lorenagmad/Aspa"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23571011
+    description: "Aspa v1.0.0"
+  - type: doi
+    value: 10.5281/zenodo.23571010
+    description: "All versions of Aspa (resolves to the latest)"
 authors:
   - family-names: "Gutiérrez Madroñal"
     given-names: "Lorena"
-    affiliation: "Universidad"
+    affiliation: "University of Cádiz"
+    email: "lorena.gutierrez@uca.es"
     # orcid: "https://orcid.org/0000-0000-0000-0000"
   - family-names: "Baena Pérez"
     given-names: "Rubén"
-    affiliation: "Universidad"
+    affiliation: "University of Cádiz"
     # orcid: "https://orcid.org/0000-0000-0000-0000"
   - family-names: "Mota Macías"
     given-names: "José Miguel"
-    affiliation: "Universidad"
+    affiliation: "University of Cádiz"
     # orcid: "https://orcid.org/0000-0000-0000-0000"
 keywords:
   - multiple-choice exams
